@@ -322,8 +322,9 @@
     blue:  { '150': [4, -4, -2, -4, 70], air: [4, -8, -2, -8, 70], '167': [4, -8, -2, -8, 80] },
   };
   const BLUE_STOCK_PRICE = 75;
+  const isMeta = p.smart || /meta/i.test(p.brand || ''); // Parham Nov 23: no C$350 lens offer on Ray-Ban Meta
   function stockOffer() {
-    if (p.kind === 'contacts' || !state.lensOn || state.pick.rx !== 'sv' || framePrice() < 350) return null;
+    if (p.kind === 'contacts' || isMeta || !state.lensOn || state.pick.rx !== 'sv' || framePrice() < 350) return null;
     const o = optOf('design'); if (!o || !['hc', 'trio', 'blue'].includes(o.id)) return null;
     if ((state.pick.light || 'clear') !== 'clear') return null;
     const idx = state.pick.index || '150', rg = STOCK[o.id === 'blue' ? 'blue' : 'clear'][idx];
@@ -561,7 +562,7 @@
     b.innerHTML = `<div class="total"><span>${esc(summary())}</span><b>${fmt(items())}</b></div>
       <p class="fine">${taxable() ? '+ 13% HST (non-prescription).' : 'No HST on prescription eyewear.'} ${p.kind === 'contacts' ? (more ? `Add ${more} more box${more > 1 ? 'es' : ''} for <b>free shipping</b>, or add any glasses.` : '<b>Free shipping</b> on this order.') : '<b>Free shipping</b> on glasses.'}</p>
       ${p.kind === 'contacts' && /colou?r/i.test(p.title) ? `<label class="toggle" style="white-space:normal"><input type="checkbox" id="plano" ${state.plano ? 'checked' : ''}> No prescription power (0.00), colour only. HST applies.</label>` : ''}
-      ${(() => { const so = stockOffer(); if (!so) return framePrice() >= 350 && state.lensOn && state.pick.rx === 'sv' ? '<p class="fine">Frames from C$350: stock single vision lenses (Essential or Anti-reflective) 100% off, or Blue-light for C$75, when your prescription fits our stock range. Thinner materials pay only their upgrade; not on 1.74.</p>' : '';
+      ${(() => { const so = stockOffer(); if (!so) return !isMeta && framePrice() >= 350 && state.lensOn && state.pick.rx === 'sv' ? '<p class="fine">Frames from C$350: stock single vision lenses (Essential or Anti-reflective) 100% off, or Blue-light for C$75, when your prescription fits our stock range. Thinner materials pay only their upgrade; not on 1.74.</p>' : '';
         return so.ok ? `<p class="stock-offer"><b>Stock lens offer: ${esc(so.label)} (−${fmt(so.amount)})</b><br><small>With frames from C$350. We confirm your prescription before ordering.</small></p>`
           : `<p class="fine">Stock lens offer (frames from C$350): ${esc(so.why)}.</p>`; })()}
       <p class="err" id="err" role="alert"></p>

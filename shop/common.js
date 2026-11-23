@@ -11,8 +11,10 @@ window.Shop = (() => {
   function applies(pr, item) {
     const d = today(), s = pr.scope || {};
     if ((pr.start && d < pr.start) || (pr.end && d > pr.end)) return false;
-    if (s.all) return true;
-    return (s.brands || []).includes(item.brand) || (s.slugs || []).includes(item.slug) || (s.kinds || []).includes(item.kind);
+    // Parham Nov 23: Ray-Ban Meta (smart) never gets store-wide/kind promos; only a promo naming its brand or slug.
+    const meta = item.smart || /meta/i.test(item.brand || '');
+    if (s.all) return !meta;
+    return (s.brands || []).includes(item.brand) || (s.slugs || []).includes(item.slug) || (!meta && (s.kinds || []).includes(item.kind));
   }
   const off = (pr, price) => Math.min(price, pr.type === 'amount' ? pr.value : Math.round(price * pr.value) / 100);
   // Best public (code-less) promo for an item → { price, was, label } or null.
