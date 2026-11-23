@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Try it on — Leruso Eyewear</title>
+<meta name="description" content="Try frames, Transitions lens colours and coloured contact lenses on your own face, live with your camera. Nothing is uploaded or saved.">
+<link rel="canonical" href="https://lerusoeyewear.com/shop/try-on/">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230c0b09'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23c9a46a' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../shop.css">
+<link rel="stylesheet" href="../collection.css">
+<style>
+  .intro { max-width: 1100px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 90px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center; }
+  @media (max-width: 860px) { .intro { grid-template-columns: 1fr; padding-top: 30px; } }
+  .intro h1 { font: 300 clamp(44px, 6vw, 76px)/.95 var(--serif); margin: 10px 0 18px; }
+  .intro h1 em { color: var(--gold); }
+  .intro p { font: 300 19px/1.55 var(--serif); color: #3b352c; max-width: 42ch; }
+  .intro__go { display: flex; gap: 12px; flex-wrap: wrap; margin: 26px 0 14px; }
+  .intro__pick { background: #f6f6f4 url(/assets/img/marble.jpg) center / cover; padding: 34px 24px; text-align: center; }
+  .intro__pick img { width: 100%; max-height: 190px; object-fit: contain; mix-blend-mode: multiply; }
+  .intro__pick b { display: block; font: 500 11px var(--sans); letter-spacing: .22em; text-transform: uppercase; margin-top: 16px; color: #1d1a15; }
+  .intro__how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; font-size: 13px; color: #6f6a62; line-height: 1.5; }
+  .intro__how strong { display: block; font: 400 22px var(--serif); color: var(--gold); }
+
+  /* the live view takes the whole screen */
+  .vto { position: fixed; inset: 0; z-index: 1000; background: #0c0b09; color: #f5f0e6; overscroll-behavior: none; touch-action: manipulation; }
+  .vto[hidden] { display: none; }
+  .vto canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .vto__top { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 14px 12px; background: linear-gradient(rgba(12,11,9,.55), transparent); }
+  .vto__x { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(245,240,230,.35); background: rgba(12,11,9,.35); color: #fff; font-size: 18px; cursor: pointer; flex: none; }
+  .vto__modes { display: flex; gap: 4px; margin: 0 auto; background: rgba(12,11,9,.45); border-radius: 999px; padding: 4px; backdrop-filter: blur(8px); }
+  .vto__modes button { border: 0; background: none; color: rgba(245,240,230,.75); font: 500 10.5px var(--sans); letter-spacing: .16em; text-transform: uppercase; padding: 9px 14px; border-radius: 999px; cursor: pointer; }
+  .vto__modes button[aria-pressed="true"] { background: #f5f0e6; color: #1d1a15; }
+  .vto__msg { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); font: 400 15px var(--sans); text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.6); pointer-events: none; max-width: 80vw; }
+  .vto__sheet { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 14px max(16px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(12,11,9,.72) 28%); }
+  .vto__now { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .vto__now small { display: block; font: 500 10px var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+  .vto__now b { font: 400 22px/1.1 var(--serif); }
+  .vto__now span { font-size: 13px; opacity: .8; }
+  .vto__now a { flex: none; }
+  .vto__rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; scrollbar-width: none; }
+  .vto__rail::-webkit-scrollbar { display: none; }
+  .vto__rail button { flex: none; width: 104px; height: 64px; scroll-snap-align: start; border: 1px solid rgba(245,240,230,.18); border-radius: 10px; background: rgba(245,240,230,.92); padding: 6px; cursor: pointer; }
+  .vto__rail button[aria-pressed="true"] { border: 2px solid var(--gold); }
+  .vto__rail img { width: 100%; height: 100%; object-fit: contain; }
+  .vto__search { width: 100%; height: 36px; border: 0; border-radius: 999px; padding: 0 14px; margin-bottom: 10px; background: rgba(245,240,230,.14); color: #fff; font: 400 13px var(--sans); }
+  .vto__face { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; font-size: 12.5px; }
+  .vto__face b { color: var(--gold); font-weight: 600; }
+  .vto__face button { flex: none; border: 1px solid rgba(201,164,106,.7); background: none; color: #f5f0e6; border-radius: 999px; padding: 7px 12px; font: 500 11px var(--sans); cursor: pointer; }
+  .vto__face button[aria-pressed="true"] { background: var(--gold); color: #1d1a15; border-color: var(--gold); }
+  .vto__rail button.is-suit { box-shadow: inset 0 0 0 2px rgba(201,164,106,.9); }
+  .vto__search::placeholder { color: rgba(245,240,230,.6); }
+  .vto__chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .vto__chips::-webkit-scrollbar { display: none; }
+  .vto__chip { flex: none; display: inline-flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: 0; color: #f5f0e6; font: 500 10px var(--sans); letter-spacing: .06em; cursor: pointer; width: 64px; text-align: center; }
+  .vto__chip i { width: 40px; height: 40px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); }
+  .vto__chip[aria-pressed="true"] i { box-shadow: 0 0 0 2px var(--gold), inset 0 0 0 2px rgba(255,255,255,.4); }
+  .vto__lbl { font: 500 10px var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold); margin: 10px 0 8px; }
+  .vto__light { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font-size: 12px; }
+  .vto__light input { accent-color: var(--gold); width: 100%; }
+  .vto__row { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 12.5px; }
+  .vto__seg { display: inline-flex; background: rgba(245,240,230,.14); border-radius: 999px; padding: 3px; }
+  .vto__seg { flex-wrap: wrap; }
+  .vto__seg button { border: 0; background: none; color: #f5f0e6; font: 500 11px var(--sans); padding: 7px 10px; border-radius: 999px; cursor: pointer; }
+  .vto__seg button[aria-pressed="true"] { background: #f5f0e6; color: #1d1a15; }
+  .vto__note { font-size: 11.5px; opacity: .7; margin-top: 8px; line-height: 1.45; }
+  @media (min-width: 900px) { .vto__sheet { left: auto; width: 420px; top: 0; padding-top: 80px; background: linear-gradient(90deg, transparent, rgba(12,11,9,.8) 18%); display: flex; flex-direction: column; justify-content: flex-end; }
+    .vto__rail { flex-wrap: wrap; overflow: auto; max-height: 46vh; } .vto__rail button { width: calc(33.3% - 6px); } }
+</style>
+</head>
+<body class="shop-light collection">
+<header class="shop-nav">
+  <a href="/" class="nav__logo" aria-label="Leruso Eyewear home">LERUSO<span>EYEWEAR</span></a>
+  <nav class="shop-nav__links" aria-label="Main">
+    <a href="/">Home</a><a href="/shop/">Shop</a><a href="/shop/limited/">Limited</a><a href="/shop/bag/" data-bag>Bag</a>
+    <a class="btn btn--gold btn--sm hide-sm" href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book an exam</a>
+  </nav>
+</header>
+
+<main class="intro">
+  <section>
+    <p class="c-hero__kicker" style="text-align:left;margin:0">Shop · Leruso Boutique</p>
+    <h1>Try it <em>on.</em></h1>
+    <p>Frames at their true size on your face, Transitions colours from indoors to full sun, and coloured contact lenses. Live, full screen, with your camera.</p>
+    <div class="intro__go">
+      <button class="btn btn--gold" id="go">Start camera</button>
+      <label class="btn btn--ghost" style="cursor:pointer">Use a photo<input type="file" id="photo" accept="image/*" hidden></label>
+    </div>
+    <p class="fine">Everything happens on your device. Your image is never uploaded or saved.</p>
+    <div class="intro__how"><div><strong>1</strong>Glasses off, face the light.</div><div><strong>2</strong>Hold the camera at eye level.</div><div><strong>3</strong>Turn your head slowly to see the fit.</div></div>
+  </section>
+  <section class="intro__pick" id="pick"><img id="pickImg" alt=""><b id="pickName">Choose a frame inside</b></section>
+</main>
+
+<div class="vto" id="vto" hidden>
+  <canvas id="cv" aria-label="Your camera with the selected eyewear"></canvas>
+  <div class="vto__top">
+    <button class="vto__x" id="close" aria-label="Close">✕</button>
+    <div class="vto__modes" role="group" aria-label="What to try">
+      <button data-mode="frames" aria-pressed="true">Frames</button>
+      <button data-mode="transitions" aria-pressed="false">Transitions</button>
+      <button data-mode="contacts" aria-pressed="false">Contacts</button>
+    </div>
+    <button class="vto__x" id="shot" aria-label="Take a photo to share" title="Take a photo to share"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg></button>
+  </div>
+  <p class="vto__msg" id="msg"></p>
+
+  <div class="vto__sheet">
+    <div data-pane="frames">
+      <div class="vto__now"><div><small id="nowBrand"></small><b id="nowTitle"></b><br><span id="nowPrice"></span></div><a class="btn btn--gold btn--sm" id="nowView" href="/shop/">View</a></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <input class="vto__search" id="fq" type="search" placeholder="Search a house or model" aria-label="Search frames" style="margin:0;flex:1">
+        <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;white-space:nowrap;opacity:.85">Your PD <input id="pd" inputmode="decimal" placeholder="mm" aria-label="Your pupillary distance in mm" style="width:58px;height:36px;border:0;border-radius:999px;padding:0 10px;background:rgba(245,240,230,.14);color:#fff;font:400 13px var(--sans)"></label>
+      </div>
+      <div class="vto__face" id="face" hidden><span id="faceTxt"></span><button id="faceBtn" type="button" aria-pressed="false">Show frames that suit you</button></div>
+      <div class="vto__rail" id="rail"></div>
+    </div>
+    <div data-pane="transitions" hidden>
+      <div class="vto__row" style="margin:0 0 4px"><span class="vto__lbl" style="margin:0">Transitions</span>
+        <div class="vto__seg" id="tline"><button data-l="gens" aria-pressed="true">GEN S</button><button data-l="touch" aria-pressed="false">Color Touch</button><button data-l="xtr" aria-pressed="false">XTRActive</button><button data-l="xpol" aria-pressed="false">Polarized</button></div></div>
+      <div class="vto__row" id="tfx" hidden style="margin:2px 0 6px"><span>Effect</span><div class="vto__seg"><button data-fx="washed" aria-pressed="true">Washed</button><button data-fx="gradient" aria-pressed="false">Gradient</button></div></div>
+      <div class="vto__chips" id="tcols"></div>
+      <p class="vto__lbl">Light</p>
+      <div class="vto__light"><span>Indoors</span><input type="range" id="sun" min="0" max="100" value="100" aria-label="From indoors to full sun"><span>Full sun</span></div>
+      <div class="vto__row"><span>Driving (behind the windshield)</span><div class="vto__seg" id="car"><button data-c="0" aria-pressed="true">Off</button><button data-c="1" aria-pressed="false">On</button></div></div>
+      <p class="vto__note" id="tnote"></p>
+    </div>
+    <div data-pane="contacts" hidden>
+      <div class="vto__row" style="margin:0 0 4px"><span class="vto__lbl" style="margin:0">Colour lenses</span>
+        <div class="vto__seg" id="cline"><button data-l="air" aria-pressed="true">Air Optix Colors</button><button data-l="dailies" aria-pressed="false">Dailies Colors</button></div></div>
+      <div class="vto__chips" id="ccols"></div>
+      <p class="vto__note">Coloured lenses need a fitting and a valid prescription, even with no power. <a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener" style="color:var(--gold)">Book a fitting</a></p>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer__mark">LERUSO</div>
+  <p class="footer__legal">© <span data-year>2026</span> Leruso Eyewear Inc. · Brand names are trademarks of their respective owners. · <a href="/policies/">Store policies</a> · <a href="/policies/terms/">Terms</a> · <a href="/policies/privacy/">Privacy</a></p>
+</footer>
+
+<script src="../common.js"></script>
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+import { headPose, seat, temple3, add, mul, unit } from '../vto-core.js';
+const $ = (s) => document.querySelector(s);
+const { esc, fmt } = Shop;
+const qs = new URLSearchParams(location.search);
+const cv = $('#cv'), ctx = cv.getContext('2d');
+
+/* ---------- lens catalogues ---------- */
+// Transitions colours sampled from the activated swatches on transitions.com (GEN S, 2026).
+// dark = fully activated darkness; car = how far it darkens behind a windshield; base = residual tint indoors.
+const TRANS = {
+  gens: { note: 'Transitions GEN S: clear indoors, dark outside in seconds. It does not darken behind a car windshield.', car: 0, base: .03, dark: .9, cols: [
+    ['Grey', '#212624'], ['Brown', '#2f200f'], ['Graphite Green', '#24321d'], ['Sapphire', '#113452'], ['Amethyst', '#583364'], ['Emerald', '#0a392a'], ['Amber', '#52370c'], ['Ruby', '#681434']] },
+  xtr: { note: 'Transitions XTRActive: a light tint indoors, extra dark in strong sun, and it also darkens behind the windshield.', car: .6, base: .14, dark: .95, cols: [
+    ['Grey', '#1b1d1e'], ['Brown', '#2a1b0e'], ['Graphite Green', '#1f2a1a']] },
+  // Color Touch: always a soft tint indoors (washed = even, gradient = darker at the top), sun-dark outside
+  touch: { note: 'Transitions Color Touch: a soft colour indoors (washed or gradient), sun-dark outside. Not for night driving.', car: 0, base: .2, dark: .9, fx: true, cols: [
+    ['Ruby', '#681434'], ['Sapphire', '#143757'], ['Amethyst', '#5d3568'], ['Emerald', '#093d2c'], ['Amber', '#573b0c']] },
+  xpol: { note: 'Transitions XTRActive Polarized: light tint indoors, extra dark and polarized in the sun, darkens in the car too.', car: .65, base: .12, dark: .96, cols: [['Grey', '#1b1d1e']] },
+};
+// Coloured contact lens tints (opaque, printed in rings around a clear pupil).
+const CL = {
+  air: [['Brilliant Blue', '#2c86e0'], ['Blue', '#3d72bd'], ['True Sapphire', '#2547a3'], ['Turquoise', '#23a6ad'], ['Green', '#4f9150'], ['Gemstone Green', '#2a9b70'],
+    ['Grey', '#8d989f'], ['Sterling Gray', '#b3bcc2'], ['Honey', '#bf8a3b'], ['Pure Hazel', '#94703c'], ['Brown', '#6e4a2a'], ['Amethyst', '#8360ad']],
+  dailies: [['Mystic Blue', '#3f7cb8'], ['Mystic Gray', '#9aa2a7'], ['Mystic Hazel', '#977341'], ['Mystic Green', '#56905c']],
+};
+const state = { pd: 0, fx: 'washed', mode: 'frames', frame: null, tline: 'gens', tcol: 0, sun: 1, car: false, cline: 'air', ccol: 0 };
+
+/* ---------- frames ---------- */
+let frames = {}, F = null;    // F = loaded assets for the frame on screen
+const vtoBase = '/vto/';
+fetch(vtoBase + 'vto.json', { cache: 'no-cache' }).then((r) => r.json()).then((j) => {
+  frames = j;
+  const want = qs.get('p');
+  pickFrame(want && frames[want] ? want : Object.keys(frames).sort((a, b) => frames[b].inStore - frames[a].inStore)[0]);
+  renderRail();
+  if (qs.get('mode')) setMode(qs.get('mode'));
+  // opened from a product page: go straight to the camera with that frame on
+  if ((qs.get('p') || qs.get('mode')) && !qs.get('still')) $('#go').click();
+});
+function renderRail() {
+  const q = ($('#fq').value || '').toLowerCase();
+  const suits = face.suits;
+  const list = Object.entries(frames).filter(([, f]) => (!q || (f.brand + ' ' + f.title).toLowerCase().includes(q)) && (!face.only || !suits || suits.includes(f.shape)))
+    .sort((a, b) => ((b[0] === state.frame) - (a[0] === state.frame)) || (b[1].inStore - a[1].inStore) || (b[1].price - a[1].price)).slice(0, 240);
+  $('#rail').innerHTML = list.map(([s, f]) => `<button data-s="${esc(s)}" class="${suits && suits.includes(f.shape) ? 'is-suit' : ''}" aria-pressed="${s === state.frame}" title="${esc(f.brand + ' ' + f.title)}"><img src="${vtoBase}${esc(s)}.webp" alt="${esc(f.brand + ' ' + f.title)}" loading="lazy"></button>`).join('')
+    || '<p class="vto__note">No frames match.</p>';
+  $('#rail').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => pickFrame(b.dataset.s)));
+}
+$('#fq').addEventListener('input', renderRail);
+function loadImg(src) { return new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; }); }
+async function pickFrame(slug) {
+  if (!slug) return;
+  state.frame = slug; const f = frames[slug];
+  document.querySelectorAll('#rail button').forEach((x) => x.setAttribute('aria-pressed', x.dataset.s === slug));
+  const on = document.querySelector(`#rail button[data-s="${CSS.escape(slug)}"]`); if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+  $('#nowBrand').textContent = f.brand; $('#nowTitle').textContent = f.title; $('#nowPrice').textContent = f.price ? fmt(f.price) : '';
+  $('#nowView').href = `/shop/product.html?p=${encodeURIComponent(slug)}&b=${encodeURIComponent(f.brand)}`;
+  $('#pickImg').src = vtoBase + slug + '.webp'; $('#pickName').textContent = f.brand + ' ' + f.title;
+  const [img, m0] = await Promise.all([loadImg(vtoBase + slug + '.webp'), loadImg(vtoBase + slug + '-l.webp')]);
+  const mask = toAlpha(m0, f);
+  if (state.frame !== slug) return;
+  F = { f, img, mask, lens: lensLayer(mask, f), arm: armLook(img, f) }; tintLayer();
+  if (f.tp) loadImg(vtoBase + slug + '-tp.webp').then((t) => { if (F && F.f === f) F.tp = t; }).catch(() => {});
+}
+// For frames without a side photo: read each end piece in the front photo (its colour and height at the hinge) so the
+// arm drawn for it matches the frame instead of being a made-up grey bar.
+function armLook(img, f) {
+  if (!f.hinge) return null;
+  try {
+    const c = document.createElement('canvas'); c.width = f.W; c.height = f.H; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, f.W, f.H);
+    const cDist = ((f.boxes.l[0] + f.boxes.l[2]) - (f.boxes.r[0] + f.boxes.r[2])) / 2, mmPx = (f.eye + f.dbl) / (cDist || 1);
+    const out = {};
+    for (const s of ['r', 'l']) {
+      // per row: the outermost solid pixel within 30 px of the hinge = the end piece itself (not the lens behind it)
+      const [hx, hy] = f.hinge[s], dir = s === 'r' ? 1 : -1, x0 = Math.max(0, Math.min(f.W - 30, s === 'r' ? Math.round(hx) : Math.round(hx) - 29)), w = 30;
+      const d = g.getImageData(x0, 0, w, f.H).data, first = [];
+      for (let y = 0; y < f.H; y++) { let ox = -1; for (let i = 0; i < w; i++) { const xi = dir > 0 ? i : w - 1 - i; if (d[(y * w + xi) * 4 + 3] > 220) { ox = xi; break; } } first.push(ox); }
+      const near = (y) => first[y] >= 0 && (dir > 0 ? first[y] : w - 1 - first[y]) <= 14;
+      let y0 = Math.round(Math.max(0, Math.min(f.H - 1, hy))), y1 = y0;
+      if (!near(y0)) { let k = 1; const kmax = Math.round(f.H * .2); while (k < kmax && !near(y0 + k) && !near(y0 - k)) k++; y0 = y1 = near(y0 + k) ? y0 + k : y0 - k; }
+      if (!near(y0)) { out[s] = null; continue; }
+      while (y0 > 0 && near(y0 - 1)) y0--; while (y1 < f.H - 1 && near(y1 + 1)) y1++;
+      const px = []; for (let y = y0; y <= y1; y++) for (let j = 5; j < 16; j++) { const xi = first[y] + dir * j; if (xi < 0 || xi >= w) continue; const o = (y * w + xi) * 4; if (d[o + 3] > 220) px.push([d[o], d[o + 1], d[o + 2]]); }
+      if (!px.length) { out[s] = null; continue; }
+      px.sort((p, q) => (p[0] + p[1] + p[2]) - (q[0] + q[1] + q[2]));                // body colour, not the edge shine
+      const med = px[Math.floor(px.length * .25)];
+      for (let k = 0; k < 3; k++) med[k] = Math.round(med[k] * .7);               // the arm runs back into the head's shade
+      out[s] = { col: '#' + med.map((v) => v.toString(16).padStart(2, '0')).join(''), mm: Math.max(1.6, Math.min(9, (y1 - y0 + 1) * mmPx)), cy: (y0 + y1) / 2 };
+    }
+    return out;
+  } catch { return null; }
+}
+// the lens mask is stored as greyscale (white = lens); turn it into transparency
+function toAlpha(m, f) {
+  const c = document.createElement('canvas'); c.width = f.W; c.height = f.H; const g = c.getContext('2d'); g.drawImage(m, 0, 0, f.W, f.H);
+  const d = g.getImageData(0, 0, f.W, f.H); for (let i = 0; i < d.data.length; i += 4) { d.data[i + 3] = d.data[i]; d.data[i] = d.data[i + 1] = d.data[i + 2] = 255; }
+  g.putImageData(d, 0, 0); return c;
+}
+// lens layers in the frame photo's own pixels: a soft glass sheen, and the Transitions tint
+function lensLayer(mask, f) {
+  const c = document.createElement('canvas'); c.width = f.W; c.height = f.H; const g = c.getContext('2d');
+  g.drawImage(mask, 0, 0, f.W, f.H); g.globalCompositeOperation = 'source-in';
+  const gr = g.createLinearGradient(0, 0, f.W * .3, f.H); gr.addColorStop(0, 'rgba(255,255,255,.16)'); gr.addColorStop(.45, 'rgba(255,255,255,.03)'); gr.addColorStop(1, 'rgba(255,255,255,.08)');
+  g.fillStyle = gr; g.fillRect(0, 0, f.W, f.H); return c;
+}
+function tintLayer() {
+  if (!F) return; const { f, mask } = F; const col = TRANS[state.tline].cols[state.tcol][1];
+  const c = F.tint || document.createElement('canvas'); c.width = f.W; c.height = f.H; const g = c.getContext('2d');
+  g.clearRect(0, 0, f.W, f.H); g.drawImage(mask, 0, 0, f.W, f.H); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, f.W, f.H);
+  F.tint = c;
+  // gradient effect: full colour at the top of the lens fading towards the bottom (used for the indoor tint)
+  const gc = F.tintGrad || document.createElement('canvas'); gc.width = f.W; gc.height = f.H; const gg = gc.getContext('2d');
+  gg.clearRect(0, 0, f.W, f.H); gg.drawImage(c, 0, 0); gg.globalCompositeOperation = 'destination-in';
+  const top = Math.min(f.boxes.r[1], f.boxes.l[1]), bot = Math.max(f.boxes.r[3], f.boxes.l[3]);
+  const gr = gg.createLinearGradient(0, top, 0, bot); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.55, 'rgba(0,0,0,.45)'); gr.addColorStop(1, 'rgba(0,0,0,.05)');
+  gg.fillStyle = gr; gg.fillRect(0, 0, f.W, f.H); F.tintGrad = gc;
+}
+
+/* ---------- panes ---------- */
+document.querySelectorAll('.vto__modes button').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+function setMode(m) {
+  state.mode = m; document.querySelectorAll('.vto__modes button').forEach((x) => x.setAttribute('aria-pressed', x.dataset.mode === m));
+  document.querySelectorAll('[data-pane]').forEach((p) => (p.hidden = p.dataset.pane !== m));
+  // Transitions are shown in a clear eyeglass frame
+  if (m === 'transitions' && (!state.frame || frames[state.frame].kind !== 'glasses')) {
+    const opt = Object.keys(frames).find((k) => frames[k].kind === 'glasses' && frames[k].inStore) || Object.keys(frames).find((k) => frames[k].kind === 'glasses');
+    if (opt) pickFrame(opt);
+  }
+}
+const chip = (name, col, on, i) => `<button class="vto__chip" data-i="${i}" aria-pressed="${on}"><i style="background:${col}"></i>${esc(name)}</button>`;
+function renderTrans() {
+  const L = TRANS[state.tline]; state.tcol = Math.min(state.tcol, L.cols.length - 1);
+  $('#tcols').innerHTML = L.cols.map((c, i) => chip(c[0], `radial-gradient(circle at 35% 30%, #fff8 0 8%, ${c[1]} 60%)`, i === state.tcol, i)).join('');
+  $('#tcols').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { state.tcol = +b.dataset.i; renderTrans(); tintLayer(); }));
+  $('#tnote').textContent = L.note;
+}
+$('#tline').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setLine(b.dataset.l)));
+function setLine(l) { if (!TRANS[l]) return; state.tline = l; $('#tline').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x.dataset.l === l)); $('#tfx').hidden = !TRANS[l].fx; renderTrans(); tintLayer(); }
+$('#tfx').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { state.fx = b.dataset.fx; $('#tfx').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
+if (qs.get('line')) setLine(qs.get('line'));
+$('#car').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { state.car = b.dataset.c === '1'; $('#car').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
+$('#sun').addEventListener('input', (e) => (state.sun = e.target.value / 100));
+function renderCL() {
+  const L = CL[state.cline]; state.ccol = Math.min(state.ccol, L.length - 1);
+  $('#ccols').innerHTML = L.map((c, i) => chip(c[0], `radial-gradient(circle, #111 0 22%, ${c[1]} 24% 78%, #222 92%)`, i === state.ccol, i)).join('');
+  $('#ccols').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { state.ccol = +b.dataset.i; renderCL(); }));
+}
+$('#cline').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { state.cline = b.dataset.l; $('#cline').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); renderCL(); }));
+renderTrans(); renderCL();
+const setPd = (v) => { const x = parseFloat(String(v).replace(',', '.')); state.pd = x >= 45 && x <= 80 ? x : 0; try { state.pd ? localStorage.setItem('leruso_pd', state.pd) : localStorage.removeItem('leruso_pd'); } catch { /* private mode */ } };
+try { const saved = qs.get('pd') || localStorage.getItem('leruso_pd'); if (saved) { setPd(saved); if (state.pd) $('#pd').value = state.pd; } } catch { /* ignore */ }
+$('#pd').addEventListener('input', (e) => setPd(e.target.value));
+
+/* ---------- face shape ---------- */
+// Proportions read along the head's own axes (so a tilted head doesn't skew them), collected over many frames,
+// and the median decides. Only frames where the face is roughly straight-on are used.
+const SUITS = { round: ['rectangle', 'square', 'angular', 'cateye'], square: ['round', 'oval', 'aviator', 'cateye'],
+  oval: ['rectangle', 'square', 'angular', 'aviator', 'round', 'oval', 'cateye'], oblong: ['square', 'angular', 'round', 'aviator'],
+  heart: ['oval', 'round', 'aviator'], diamond: ['oval', 'cateye', 'round'] };
+const FACE_NOTE = { round: 'angular frames add definition', square: 'soft, rounded frames balance a strong jaw', oval: 'most shapes suit you',
+  oblong: 'deeper frames balance a longer face', heart: 'light, rounded frames balance a wider brow', diamond: 'oval and cat-eye frames soften the cheekbones' };
+const face = { samples: [], shape: null, suits: null, only: false };
+function faceSample(P, h) {
+  try {
+    if (Math.abs(h.yaw) > .12 || Math.abs(h.roll) > .35 || Math.abs(h.pitch) > .25 || !h.mm) return;
+    const wx = (a, b) => Math.abs((P(b).x - P(a).x) * h.ex.x + (P(b).y - P(a).y) * h.ex.y), hy = (a, b) => Math.abs((P(b).x - P(a).x) * h.ey.x + (P(b).y - P(a).y) * h.ey.y);
+    const cheek = wx(234, 454); if (!cheek) return;
+    face.samples.push({ r: hy(10, 152) / cheek, j: wx(172, 397) / cheek, f: wx(54, 284) / cheek });
+    if (face.samples.length > 90) face.samples.shift();
+    if (face.samples.length >= 24 && face.samples.length % 12 === 0) classifyFace();
+  } catch { /* never let this interrupt the try-on */ }
+}
+function classifyFace() {
+  const med = (k) => { const a = face.samples.map((x) => x[k]).sort((x, y) => x - y); return a[a.length >> 1]; };
+  const r = med('r'), j = med('j'), f = med('f');
+  let s = 'oval';
+  if (r < 1.2) s = j >= .88 ? 'square' : 'round';
+  else if (r > 1.4) s = 'oblong';
+  else if (j >= .88) s = 'square';
+  else if (f - j >= .1 && j < .8) s = 'heart';
+  else if (f < .8 && j < .78) s = 'diamond';
+  if (s === face.shape) return;
+  face.shape = s; face.suits = SUITS[s];
+  $('#faceTxt').innerHTML = `Your face shape: <b>${s[0].toUpperCase() + s.slice(1)}</b> · ${FACE_NOTE[s]}`;
+  $('#face').hidden = false; renderRail();
+}
+$('#faceBtn').addEventListener('click', () => { face.only = !face.only; $('#faceBtn').setAttribute('aria-pressed', face.only); renderRail(); });
+
+/* ---------- camera / photo ---------- */
+let landmarker = null, video = null, still = null, running = false, lastT = 0;
+async function loadTracker() {
+  const files = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+  landmarker = await FaceLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task', delegate: 'GPU' },
+    runningMode: 'VIDEO', numFaces: 1, outputFacialTransformationMatrixes: true });
+}
+function openView() { $('#vto').hidden = false; document.documentElement.style.overflow = 'hidden'; size(); }
+function closeView() { running = false; $('#vto').hidden = true; document.documentElement.style.overflow = ''; if (video && video.srcObject) video.srcObject.getTracks().forEach((t) => t.stop()); video = null; }
+$('#close').addEventListener('click', closeView);
+function size() { const d = Math.min(devicePixelRatio || 1, 2); cv.width = Math.round(innerWidth * d); cv.height = Math.round(innerHeight * d); }
+addEventListener('resize', size);
+$('#go').addEventListener('click', async () => {
+  if (!(await window.ageGate())) return;
+  openView(); $('#msg').textContent = 'Starting camera…'; face.samples = []; face.shape = null;
+  try {
+    video = document.createElement('video'); video.playsInline = true; video.muted = true;
+    video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    await video.play(); still = null;
+    if (!landmarker) { $('#msg').textContent = 'Loading face tracking…'; await loadTracker(); }
+    running = true; requestAnimationFrame(loop);
+  } catch (e) {
+    if (qs.get('p') && !video?.srcObject) { closeView(); $('#go').textContent = 'Start camera with this frame'; return; }
+    $('#msg').textContent = 'The camera is not available. Close and choose “Use a photo”.';
+  }
+});
+if (/^(127\.0\.0\.1|localhost)$/.test(location.hostname) && /^\/[\w\/.-]+$/.test(qs.get('still') || '')) addEventListener('load', async () => {
+  openView(); still = new Image(); still.src = qs.get('still'); await still.decode(); video = null;
+  if (!landmarker) await loadTracker(); running = true; requestAnimationFrame(loop);
+});
+$('#photo').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  if (!(await window.ageGate())) { e.target.value = ''; return; }
+  openView(); $('#msg').textContent = 'Loading…'; face.samples = []; face.shape = null;
+  still = new Image(); still.src = URL.createObjectURL(f); await still.decode(); video = null;
+  if (!landmarker) await loadTracker();
+  running = true; requestAnimationFrame(loop);
+});
+
+/* ---------- tracking + drawing ---------- */
+const EYE_R = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
+const EYE_L = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+const OVAL = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+let pose = null;                  // smoothed head pose
+const ease = (o, n, k) => (o == null ? n : o + (n - o) * k);
+
+function loop(t) {
+  if (!running) return;
+  const src = video || still; if (!src) return;
+  const sw = src.videoWidth || src.naturalWidth, sh = src.videoHeight || src.naturalHeight;
+  let L = null, M = null;
+  try { lastT = Math.max(lastT + 1, t); const r = landmarker.detectForVideo(src, lastT); L = r.faceLandmarks && r.faceLandmarks[0]; M = r.facialTransformationMatrixes && r.facialTransformationMatrixes[0] && r.facialTransformationMatrixes[0].data; } catch { /* warming up */ }
+  // a photo is zoomed to the face so the frame fills the screen; the live camera shows the whole view
+  let cr = { x: 0, y: 0, w: sw, h: sh };
+  if (!video && L) {
+    let x0 = 1, x1 = 0, y0 = 1, y1 = 0; for (const q of L) { x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); }
+    const fw = (x1 - x0) * sw, cxp = (x0 + x1) / 2 * sw, cyp = (y0 + y1) / 2 * sh, ar = cv.width / cv.height;
+    let w = fw * 2.1, h = w / ar; if (h < (y1 - y0) * sh * 1.7) { h = (y1 - y0) * sh * 1.7; w = h * ar; }
+    const side = innerWidth >= 900 ? 420 / innerWidth : 0, low = innerWidth < 900 ? .16 : 0;   // keep the face clear of the panel
+    cr = { x: cxp - w / 2 + w * side / 2, y: cyp - h * (.48 + low), w, h };
+  }
+  const s = video ? Math.max(cv.width / sw, cv.height / sh) : Math.min(cv.width / cr.w, cv.height / cr.h);
+  const dw = cr.w * s, dh = cr.h * s, ox = (cv.width - dw) / 2, oy = (cv.height - dh) / 2;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#0c0b09'; ctx.fillRect(0, 0, cv.width, cv.height);
+  if (video) { ctx.save(); ctx.translate(cv.width, 0); ctx.scale(-1, 1); ctx.drawImage(src, ox, oy, dw, dh); ctx.restore(); }
+  else ctx.drawImage(src, cr.x, cr.y, cr.w, cr.h, ox, oy, dw, dh);
+  if (L) {
+    // canvas-space 3D points; the live camera is mirrored like a mirror
+    const X = (q) => ox + (q.x * sw - cr.x) * s, Y = (q) => oy + (q.y * sh - cr.y) * s;
+    const P = (i) => ({ x: video ? cv.width - X(L[i]) : X(L[i]), y: Y(L[i]), z: L[i].z * sw * s });
+    $('#msg').textContent = '';
+    track(P, M); render(P);
+  } else { pose = null; $('#msg').textContent = 'Looking for your face… hold the camera at eye level.'; }
+  requestAnimationFrame(loop);
+}
+
+function track(P, M) {
+  const h = headPose(P, M, !!video);
+  faceSample(P, h);
+  // a known PD (from the prescription) gives the exact scale; otherwise the iris (~11.7 mm) is the ruler
+  // (the pupils' on-screen gap along the eye line is PD × mm × the eye line's on-screen length², which shrinks as the head turns)
+  if (state.pd) h.mm = Math.abs((P(473).x - P(468).x) * h.ex.x + (P(473).y - P(468).y) * h.ex.y) / (state.pd * Math.max(.3, h.ex.x * h.ex.x + h.ex.y * h.ex.y));
+  const k = pose ? (video ? .55 : 1) : 1, o = pose || {};
+  pose = { ...h, ex: unit(lerp3(o.ex, h.ex, k)), ey: unit(lerp3(o.ey, h.ey, k)), n: unit(lerp3(o.n, h.n, k)), mm: ease(o.mm, h.mm, k * .6), pm: lerp3(o.pm, h.pm, k) };
+  if (qs.get('still')) window.__pose = { pose, raw: h, M: !!M };
+}
+const dist2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const lerp3 = (a, b, k) => (a ? { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k } : b);
+
+function render(P) {
+  if (state.mode === 'contacts') { contact(P, P(468), [469, 470, 471, 472], EYE_R); contact(P, P(473), [474, 475, 476, 477], EYE_L); return; }
+  if (!F || !pose) return;
+  const { f, img } = F, { mm } = pose;
+  const fit = seat(f, P, pose), { T } = fit;
+  temples(f, fit);
+  ctx.save(); ctx.setTransform(T.a, T.b, T.c, T.d, T.e, T.f);
+  if (state.mode === 'transitions' && F.tint) {
+    const L = TRANS[state.tline];
+    let dark = L.base + (L.dark - L.base) * Math.pow(state.sun, .8);
+    if (state.car) dark = L.base + (dark - L.base) * L.car;
+    ctx.globalCompositeOperation = 'multiply';
+    if (L.fx && state.fx === 'gradient') {          // indoor tint is a gradient; the sun darkens the whole lens on top of it
+      ctx.globalAlpha = L.base * 1.6; ctx.drawImage(F.tintGrad, 0, 0); ctx.globalAlpha = Math.max(0, dark - L.base); ctx.drawImage(F.tint, 0, 0);
+    } else { ctx.globalAlpha = dark; ctx.drawImage(F.tint, 0, 0); }
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  }
+  if (f.kind === 'glasses') { ctx.globalCompositeOperation = 'screen'; ctx.drawImage(F.lens, 0, 0); ctx.globalCompositeOperation = 'source-over'; }
+  // the front, with a soft contact shadow so it sits on the face
+  ctx.shadowColor = 'rgba(0,0,0,.32)'; ctx.shadowBlur = 2.2 * mm; ctx.shadowOffsetY = 1.6 * mm;
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+}
+
+// The near temple: the frame's own arm (cut from the maison's side / three-quarter photo) laid along the 3D line from the
+// hinge back to the ear, with its real height. Seen from the front it hides behind the hinge, so it fades in as the head
+// turns. Frames without such a photo show no arm rather than a made-up one. Drawn before the front, which covers the hinge.
+function temples(f, fit) {
+  if (!F || Math.abs(pose.yaw) < .07) return;
+  const g = temple3(f, fit, pose); if (!g) return;
+  if (!F.tp || !f.tp) return drawnArm(g);
+  const t = f.tp, x0 = t.x0 || 0;
+  const a = { x: t.xe - x0, y: t.ye - t.y0 }, al = Math.hypot(a.x, a.y) || 1;
+  let q = { x: -a.y / al, y: a.x / al }; if (q.y < 0) q = { x: -q.x, y: -q.y };       // the arm's height direction in the strip
+  const per = 98 / al;                                                               // mm per strip px
+  const b = { x: g.e.x - g.h.x, y: g.e.y - g.h.y }, c = { x: g.down.x * per, y: g.down.y * per };
+  const det = a.x * q.y - q.x * a.y; if (!det) return;
+  const A = { a: (b.x * q.y - c.x * a.y) / det, b: (b.y * q.y - c.y * a.y) / det, c: (c.x * a.x - b.x * q.x) / det, d: (c.y * a.x - b.y * q.x) / det };
+  ctx.save(); ctx.globalAlpha = Math.min(1, (Math.abs(pose.yaw) - .07) / .08);
+  ctx.setTransform(A.a, A.b, A.c, A.d, g.h.x - (A.a * x0 + A.c * t.y0), g.h.y - (A.b * x0 + A.d * t.y0));
+  ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = 4;
+  ctx.drawImage(F.tp, 0, 0);
+  ctx.restore();
+}
+// No side photo: draw the arm from the end piece's own colour and height, tapering towards the ear, lit from above.
+function drawnArm(g) {
+  const a = F.arm && F.arm[g.side]; if (!a) return;
+  const { h, e, down } = g, mm = pose.mm, t0 = a.mm / 2, t1 = Math.max(.8, a.mm * .32);
+  const P0 = (p, t) => ({ x: p.x + down.x * t, y: p.y + down.y * t });
+  ctx.save(); ctx.globalAlpha = Math.min(1, (Math.abs(pose.yaw) - .07) / .08);
+  const gr = ctx.createLinearGradient(P0(h, -t0).x, P0(h, -t0).y, P0(h, t0).x, P0(h, t0).y);
+  gr.addColorStop(0, shade(a.col, .3)); gr.addColorStop(.25, shade(a.col, .08)); gr.addColorStop(.6, a.col); gr.addColorStop(1, shade(a.col, -.45));
+  ctx.beginPath(); const p1 = P0(h, -t0), p2 = P0(e, -t1), p3 = P0(e, t1), p4 = P0(h, t0);
+  ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.quadraticCurveTo(e.x + (e.x - h.x) * .015, e.y + (e.y - h.y) * .015, p3.x, p3.y); ctx.lineTo(p4.x, p4.y); ctx.closePath();
+  ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = 1.5 * mm; ctx.shadowOffsetY = .8 * mm;
+  ctx.fillStyle = gr; ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = Math.max(.6, mm * .25);
+  ctx.beginPath(); const q1 = P0(h, -t0 * .7), q2 = P0(e, -t1 * .7); ctx.moveTo(q1.x, q1.y); ctx.lineTo(q2.x, q2.y); ctx.stroke();
+  ctx.restore();
+}
+function shade(hex, k) { const v = parseInt(hex.slice(1), 16), c = [v >> 16, (v >> 8) & 255, v & 255].map((x) => Math.max(0, Math.min(255, Math.round(x * (1 + k))))); return `rgb(${c})`; }
+
+// Coloured contact lens: the person's own iris is recoloured pixel by pixel, so its fibres, depth and lighting stay real.
+// Like a real tinted lens: clear pupil zone, slightly lighter round the pupil, a soft (not drawn-on) limbal edge, colour a
+// little muted, never bigger than the iris, clipped to the open eye so the lids stay on top, catch-lights kept.
+function contact(P, c, ring, eye) {
+  const v = parseInt(CL[state.cline][state.ccol][1].slice(1), 16), raw = [v >> 16, (v >> 8) & 255, v & 255];
+  const lum0 = raw[0] * .3 + raw[1] * .59 + raw[2] * .11, rgb = raw.map((x) => (x * .68 + lum0 * .32) * .82);
+  const rx = dist2(P(ring[0]), P(ring[2])) / 2, ry = dist2(P(ring[1]), P(ring[3])) / 2, R = Math.max(rx, ry);
+  if (R < 3) return;
+  const tilt = Math.atan2(P(ring[2]).y - P(ring[0]).y, P(ring[2]).x - P(ring[0]).x), co = Math.cos(tilt), si = Math.sin(tilt);
+  const x0 = Math.max(0, Math.floor(c.x - R * 1.15)), y0 = Math.max(0, Math.floor(c.y - R * 1.15)), w = Math.min(cv.width - x0, Math.ceil(R * 2.3)), h = Math.min(cv.height - y0, Math.ceil(R * 2.3));
+  let img; try { img = ctx.getImageData(x0, y0, w, h); } catch { return; }
+  const d = img.data, rr = new Float32Array(w * h);
+  let sum = 0, cnt = 0;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const px = x0 + i + .5 - c.x, py = y0 + j + .5 - c.y, u = px * co + py * si, vv = -px * si + py * co, r = Math.hypot(u / rx, vv / ry), k = j * w + i;
+    rr[k] = r; if (r > .4 && r < .9) { sum += d[k * 4] * .3 + d[k * 4 + 1] * .59 + d[k * 4 + 2] * .11; cnt++; }
+  }
+  const mean = Math.max(8, sum / (cnt || 1)), ss = (e0, e1, x) => { const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  for (let k = 0; k < w * h; k++) {
+    const r = rr[k], o = k * 4;
+    const a = .8 * (1 - ss(.86, 1.0, r)) * ss(.26, .42, r);
+    if (a <= 0) { d[o + 3] = 0; continue; }
+    const l = (d[o] * .3 + d[o + 1] * .59 + d[o + 2] * .11) / mean;
+    if (l > 2.2) { d[o + 3] = 0; continue; }                                         // catch-light: leave the real one
+    const tex = Math.max(.35, Math.min(1.6, Math.pow(l, 1.15))) * (1 + .1 * Math.max(0, (.62 - r) / .3)) * (r > .78 ? 1 - .35 * (r - .78) / .22 : 1);
+    d[o] = Math.min(255, rgb[0] * tex); d[o + 1] = Math.min(255, rgb[1] * tex); d[o + 2] = Math.min(255, rgb[2] * tex); d[o + 3] = a * 255;
+  }
+  const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h; tmp.getContext('2d').putImageData(img, 0, 0);
+  ctx.save(); ctx.beginPath(); eye.forEach((i, k) => { const p = P(i); k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.clip();
+  ctx.drawImage(tmp, x0, y0);
+  ctx.translate(c.x, c.y); ctx.rotate(tilt);                                       // the upper lid shades the top of the lens
+  ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = .22;
+  const sh = ctx.createLinearGradient(0, -ry, 0, ry * .1); sh.addColorStop(0, '#000'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 7); ctx.fillStyle = sh; ctx.fill();
+  ctx.restore();
+}
+// Snapshot: the look with a small Leruso caption, shared to a friend (or saved) straight from the phone
+$('#shot').addEventListener('click', async () => {
+  if (!running) return;
+  const c = document.createElement('canvas'); c.width = cv.width; c.height = cv.height; const g = c.getContext('2d');
+  g.drawImage(cv, 0, 0);
+  const f = state.frame && frames[state.frame], u = c.width / 400, h = 54 * u;
+  const gr = g.createLinearGradient(0, c.height - h * 2.2, 0, c.height); gr.addColorStop(0, 'rgba(12,11,9,0)'); gr.addColorStop(1, 'rgba(12,11,9,.85)');
+  g.fillStyle = gr; g.fillRect(0, c.height - h * 2.2, c.width, h * 2.2);
+  g.fillStyle = '#f5f0e6'; g.font = `400 ${15 * u}px "Cormorant Garamond", Georgia, serif`;
+  g.fillText(f && state.mode === 'frames' ? `${f.brand} ${f.title}` : state.mode === 'transitions' ? `Transitions® ${TRANS[state.tline].cols[state.tcol][0]}` : `${CL[state.cline][state.ccol][0]} lenses`, 16 * u, c.height - 30 * u);
+  g.fillStyle = '#c9a46a'; g.font = `600 ${8 * u}px Manrope, sans-serif`; g.fillText('LERUSO EYEWEAR · LERUSOEYEWEAR.COM', 16 * u, c.height - 14 * u);
+  const blob = await new Promise((ok) => c.toBlob(ok, 'image/jpeg', .9));
+  const file = new File([blob], 'leruso-try-on.jpg', { type: 'image/jpeg' });
+  const text = 'What do you think? Trying it on at Leruso Eyewear: lerusoeyewear.com';
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leruso-try-on.jpg'; a.click();
+});
+document.querySelectorAll('[data-year]').forEach((e) => (e.textContent = new Date().getFullYear()));
+</script>
+<script src="/shop/age-gate.js"></script>
+</body>
+</html>

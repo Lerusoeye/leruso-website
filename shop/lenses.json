@@ -1,0 +1,450 @@
+{
+ "note": "Essilor lenses, made and fitted by a licensed optician. Prices for Orma 1.5; we confirm the final lens after reviewing your prescription.",
+ "steps": [
+  {
+   "id": "rx",
+   "title": "Prescription",
+   "options": [
+    {
+     "id": "sv",
+     "name": "Single vision",
+     "desc": "One prescription, for distance or reading",
+     "price": 0
+    },
+    {
+     "id": "prog",
+     "name": "Progressive",
+     "desc": "Distance, computer and reading in one lens, no line",
+     "price": 0
+    }
+   ]
+  },
+  {
+   "id": "design",
+   "title": "Lens",
+   "showIf": {
+    "rx": [
+     "sv"
+    ]
+   },
+   "options": [
+    {
+     "id": "hc",
+     "name": "Essential",
+     "desc": "Clear lens with scratch-resistant hard coat",
+     "price": 140
+    },
+    {
+     "id": "trio",
+     "name": "Anti-reflective",
+     "desc": "Trio Easy Clean: fewer reflections, easier to clean",
+     "price": 200
+    },
+    {
+     "id": "blue",
+     "name": "Blue-light filter",
+     "desc": "Anti-reflective plus blue-violet light filtering for screens",
+     "price": 250
+    },
+    {
+     "id": "sunsolid",
+     "name": "Sun lens, solid tint",
+     "desc": "Prescription sunglasses, even tint, hard coat",
+     "price": 240,
+     "sun": true,
+     "choices": [
+      "Grey",
+      "Brown",
+      "Grey-Green",
+      "Match my sample"
+     ]
+    },
+    {
+     "id": "sungrad",
+     "name": "Sun lens, gradient tint",
+     "desc": "Darker at the top, lighter below, hard coat",
+     "price": 265,
+     "sun": true,
+     "choices": [
+      "Grey",
+      "Brown",
+      "Grey-Green",
+      "Match my sample"
+     ]
+    },
+    {
+     "id": "sunpolar",
+     "name": "Sun lens, polarized",
+     "desc": "Cuts glare from water, snow and roads, hard coat",
+     "price": 350,
+     "sun": true,
+     "choices": [
+      "Grey",
+      "Brown",
+      "Grey-Green",
+      "Copper",
+      "Ruby"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "design",
+   "title": "Progressive lens",
+   "showIf": {
+    "rx": [
+     "prog"
+    ]
+   },
+   "options": [
+    {
+     "id": "dsone",
+     "name": "Essilor Progressive DS One",
+     "desc": "Standard progressive, anti-reflective",
+     "price": 300
+    },
+    {
+     "id": "freedom",
+     "name": "Varilux Freedom DS One",
+     "desc": "Varilux comfort: wider, more natural reading and screen zones",
+     "price": 500
+    },
+    {
+     "id": "comfortmax",
+     "name": "Varilux Comfort Max",
+     "desc": "Large reading area and easy head posture, sharp even in low light",
+     "price": 700
+    },
+    {
+     "id": "physio",
+     "name": "Varilux Physio Extensee",
+     "desc": "Sharp in low light. Crizal coating included",
+     "price": 900,
+     "crizal": true
+    },
+    {
+     "id": "xr",
+     "name": "Varilux XR",
+     "desc": "Essilor’s best, built around how your eyes move. Crizal included",
+     "price": 1050,
+     "crizal": true
+    }
+   ]
+  },
+  {
+   "id": "index",
+   "title": "Thinner lenses",
+   "showIf": {
+    "rx": [
+     "sv",
+     "prog"
+    ]
+   },
+   "options": [
+    {
+     "id": "150",
+     "name": "Standard 1.5",
+     "desc": "Best for lighter prescriptions",
+     "price": 0
+    },
+    {
+     "id": "air",
+     "name": "Airwear",
+     "desc": "Light and impact-resistant, great for rimless and kids",
+     "price": 50
+    },
+    {
+     "id": "160",
+     "name": "Thin 1.6",
+     "desc": "For medium prescriptions",
+     "price": 100
+    },
+    {
+     "id": "167",
+     "name": "Extra thin 1.67",
+     "desc": "For strong prescriptions",
+     "price": 150
+    },
+    {
+     "id": "174",
+     "name": "Thinnest 1.74",
+     "desc": "For the strongest prescriptions",
+     "price": 300
+    }
+   ]
+  },
+  {
+   "id": "coat",
+   "title": "Coating",
+   "showIf": {
+    "design": [
+     "hc",
+     "trio",
+     "blue",
+     "dsone",
+     "freedom",
+     "comfortmax"
+    ]
+   },
+   "options": [
+    {
+     "id": "std",
+     "name": "Standard coating",
+     "desc": "Included with your lens",
+     "price": 0
+    },
+    {
+     "id": "bluecut",
+     "name": "Add blue-light filter",
+     "desc": "For screens (progressives)",
+     "price": 50,
+     "onlyIf": {
+      "design": [
+       "dsone",
+       "freedom",
+       "comfortmax"
+      ]
+     }
+    },
+    {
+     "id": "easy",
+     "name": "Crizal Easy Clean",
+     "desc": "Anti-reflective, repels smudges and water",
+     "price": 120
+    },
+    {
+     "id": "rock",
+     "name": "Crizal Rock",
+     "desc": "Our most scratch-resistant Crizal",
+     "price": 120
+    },
+    {
+     "id": "prevencia",
+     "name": "Crizal Prevencia",
+     "desc": "Crizal plus blue-violet light filtering",
+     "price": 150
+    },
+    {
+     "id": "sapphire",
+     "name": "Crizal Sapphire",
+     "desc": "Clearest view, fewest reflections from every angle",
+     "price": 150
+    }
+   ],
+   "hideIf": {
+    "light": [
+     "psolid",
+     "pgrad",
+     "ppolar"
+    ]
+   }
+  },
+  {
+   "id": "coat",
+   "title": "Coating",
+   "showIf": {
+    "design": [
+     "sunsolid",
+     "sungrad",
+     "sunpolar"
+    ]
+   },
+   "options": [
+    {
+     "id": "hc",
+     "name": "Hard coat",
+     "desc": "Included",
+     "price": 0
+    },
+    {
+     "id": "crizalsun",
+     "name": "Crizal Sun (back-side anti-reflective)",
+     "desc": "Back-side anti-reflective and UV protection for sun lenses",
+     "price": 120
+    },
+    {
+     "id": "flash",
+     "name": "Flash mirror",
+     "desc": "Mirrored finish in place of the hard coat. We confirm the colour with you",
+     "price": 120
+    }
+   ]
+  },
+  {
+   "id": "light",
+   "title": "Clear, Transitions or sun",
+   "options": [
+    {
+     "id": "clear",
+     "name": "Clear",
+     "desc": "Included",
+     "price": 0
+    },
+    {
+     "id": "transitions",
+     "name": "Transitions GEN S or XTRActive",
+     "desc": "Clear indoors, dark in the sun. Choose your colour",
+     "price": 150,
+     "choices": [
+      "GEN S Grey",
+      "GEN S Brown",
+      "GEN S Graphite Green",
+      "GEN S Sapphire",
+      "GEN S Amethyst",
+      "GEN S Emerald",
+      "GEN S Amber",
+      "GEN S Ruby",
+      "XTRActive Grey",
+      "XTRActive Brown",
+      "XTRActive Graphite Green"
+     ]
+    },
+    {
+     "id": "trans360",
+     "name": "Transitions GEN S · upgraded to SV 360°",
+     "desc": "In 1.74, Transitions is made on Essilor’s premium SV 360° lens (Transitions C$150 + SV 360° upgrade C$100)",
+     "price": 250,
+     "onlyIf": {
+      "rx": [
+       "sv"
+      ]
+     },
+     "choices": [
+      "GEN S Grey",
+      "GEN S Brown"
+     ]
+    },
+    {
+     "id": "transtouch",
+     "name": "Transitions Color Touch",
+     "desc": "A soft colour tint indoors, dark in the sun. Washed or gradient. Comes with Crizal Rock",
+     "price": 200,
+     "choices": [
+      "Color Touch Ruby · Washed",
+      "Color Touch Ruby · Gradient",
+      "Color Touch Sapphire · Washed",
+      "Color Touch Sapphire · Gradient",
+      "Color Touch Amethyst · Washed",
+      "Color Touch Amethyst · Gradient",
+      "Color Touch Emerald · Washed",
+      "Color Touch Emerald · Gradient",
+      "Color Touch Amber · Washed",
+      "Color Touch Amber · Gradient"
+     ]
+    },
+    {
+     "id": "transmirror",
+     "name": "Transitions XTRActive Style Mirrors",
+     "desc": "Extra dark in the sun with a mirror finish outside, clear indoors",
+     "price": 200,
+     "choices": [
+      "Style Mirror Silver",
+      "Style Mirror Blue-Green",
+      "Style Mirror Blue-Violet",
+      "Style Mirror Copper",
+      "Style Mirror Gold"
+     ]
+    },
+    {
+     "id": "transxpol",
+     "name": "Transitions XTRActive Polarized",
+     "desc": "Light tint indoors, extra dark and polarized in the sun, darkens in the car too",
+     "price": 200,
+     "choices": [
+      "XTRActive Polarized Grey"
+     ]
+    },
+    {
+     "id": "psolid",
+     "name": "Sun tint, solid",
+     "desc": "Prescription sunglasses, even tint, hard coat",
+     "price": 80,
+     "onlyIf": {
+      "rx": [
+       "prog"
+      ]
+     },
+     "choices": [
+      "Grey",
+      "Brown",
+      "Grey-Green",
+      "Match my sample"
+     ]
+    },
+    {
+     "id": "pgrad",
+     "name": "Sun tint, gradient",
+     "desc": "Darker at the top, lighter below, hard coat",
+     "price": 100,
+     "onlyIf": {
+      "rx": [
+       "prog"
+      ]
+     },
+     "choices": [
+      "Grey",
+      "Brown",
+      "Grey-Green",
+      "Match my sample"
+     ]
+    },
+    {
+     "id": "ppolar",
+     "name": "Polarized",
+     "desc": "Cuts glare from water, snow and roads, hard coat",
+     "price": 180,
+     "onlyIf": {
+      "rx": [
+       "prog"
+      ]
+     },
+     "choices": [
+      "Grey",
+      "Brown",
+      "Grey-Green",
+      "Copper",
+      "Ruby"
+     ]
+    }
+   ],
+   "hideIf": {
+    "design": [
+     "sunsolid",
+     "sungrad",
+     "sunpolar"
+    ]
+   }
+  },
+  {
+   "id": "coat",
+   "title": "Coating",
+   "showIf": {
+    "light": [
+     "psolid",
+     "pgrad",
+     "ppolar"
+    ]
+   },
+   "options": [
+    {
+     "id": "hc",
+     "name": "Hard coat",
+     "desc": "Included",
+     "price": 0
+    },
+    {
+     "id": "crizalsun",
+     "name": "Crizal Sun (back-side anti-reflective)",
+     "desc": "Back-side anti-reflective and UV protection for sun lenses",
+     "price": 120
+    },
+    {
+     "id": "flash",
+     "name": "Flash mirror",
+     "desc": "Mirrored finish in place of the hard coat. We confirm the colour with you",
+     "price": 120
+    }
+   ]
+  }
+ ]
+}

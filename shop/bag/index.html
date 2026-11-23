@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your bag — Leruso Eyewear</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#fbf8f2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230c0b09'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23c9a46a' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../shop.css">
+<style>
+  .bag { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 60px); padding-top: 30px; }
+  @media (max-width: 900px) { .bag { grid-template-columns: minmax(0, 1fr); } }
+  .line { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 16px; align-items: start; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .line img { width: 96px; height: 72px; object-fit: contain; background: #fff; border: 1px solid rgba(169, 130, 61, .2); border-radius: 6px; }
+  .line__b { font: 500 10px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+  .line__t { font: 400 20px/1.2 var(--serif); margin: 4px 0; }
+  .line__c { color: var(--stone); font-size: 12.5px; line-height: 1.5; }
+  .line__p { text-align: right; white-space: nowrap; }
+  .line__x { background: none; border: 0; color: var(--stone); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px 0 0; }
+  .sumrow { display: flex; justify-content: space-between; font-size: 14px; color: #4a443b; padding: 4px 0; }
+  .sumrow--total { font: 400 26px/1.2 var(--serif); color: var(--ivory); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 6px; }
+  .hint { font-size: 13px; color: #4f8a5b; }
+  .ins { border: 1px solid rgba(169, 130, 61, .35); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; margin: 0; }
+  .ins legend { font: 500 11px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); padding: 0 6px; }
+  .ins__opt { display: flex !important; flex-direction: row !important; gap: 10px; align-items: flex-start; cursor: pointer; }
+  .ins__opt span { display: grid; gap: 2px; font-size: 14px; color: var(--ivory); }
+  .ins__opt small { font-size: 12px; color: var(--stone); }
+  .ins__consent { display: flex !important; gap: 10px; align-items: flex-start; font-size: 12.5px !important; line-height: 1.5; }
+  .ins input[type="radio"], .ins input[type="checkbox"] { accent-color: var(--gold); margin-top: 3px; height: auto; }
+</style>
+</head>
+<body class="shop-light">
+<header class="shop-nav">
+  <a href="/" class="nav__logo" aria-label="Leruso Eyewear home">LERUSO<span>EYEWEAR</span></a>
+  <nav class="shop-nav__links" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/shop/">Shop</a>
+    <a href="/shop/limited/">Limited</a>
+    <a href="/shop/bag/" data-bag>Bag</a>
+  </nav>
+</header>
+
+<main class="shop-wrap">
+  <section class="shop-head" style="padding-bottom:0;border:0;margin:0"><p class="eyebrow">Checkout</p><h1>Your <em>bag</em></h1></section>
+  <div id="root"></div>
+</main>
+
+<footer class="footer">
+  <div class="footer__mark">LERUSO</div>
+  <div class="footer__cols">
+    <div><h4>Boutique</h4><p>7131 Bathurst St, Unit 105<br>Thornhill, ON L4J 7Z1</p><p><a href="tel:+19058814123">(905) 881-4123</a></p></div>
+    <div><h4>Shipping</h4><p>Glasses ship free. Contact lenses ship free on a 6-month supply or more (e.g. 4 boxes of 90 dailies), otherwise C$9.99. Orders with glasses always ship free.</p></div>
+    <div><h4>Appointments</h4><p>All insurance plans.<br>Direct billing.</p><p><a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book online →</a></p></div>
+  </div>
+  <p class="footer__legal">© <span data-year>2026</span> Leruso Eyewear Inc. · Brand names are trademarks of their respective owners. · <a href="/policies/">Store policies</a> · <a href="/policies/terms/">Terms</a> · <a href="/policies/privacy/">Privacy</a></p>
+</footer>
+
+<script src="../common.js"></script>
+<script>
+(async () => {
+  const ORDER_API = 'https://book.lerusoeyewear.com/api/order';
+  const { fmt, esc, bag, shippingFor, boxesToFree, codeDiscount, promosReady } = Shop;
+  const $ = (s) => document.querySelector(s);
+  const HST = 0.13;
+  const state = { delivery: 'Pick up at the boutique (Thornhill)', code: '', ins: 'none' };
+  await promosReady;
+
+  function totals(lines) {
+    const disc = lines.map((l) => (state.code ? codeDiscount(state.code, l, l.price) : null));
+    const net = lines.map((l, i) => l.price - ((disc[i] || {}).amount || 0));
+    const items = net.reduce((a, b) => a + b, 0);
+    const ship = /^Ship/.test(state.delivery) ? shippingFor(lines) : 0;
+    const tax = net.reduce((a, n, i) => a + (lines[i].taxable ? n * HST : 0), 0) + ship * HST;
+    const off = disc.reduce((a, d) => a + ((d || {}).amount || 0), 0);
+    return { items, ship, tax: +tax.toFixed(2), off, label: (disc.find(Boolean) || {}).label, total: +(items + ship + tax).toFixed(2) };
+  }
+
+  function render() {
+    const lines = bag.get();
+    if (!lines.length) { $('#root').innerHTML = '<p class="empty">Your bag is empty. <a href="/shop/" style="color:var(--gold-2)">Discover the collection →</a></p>'; return; }
+    const t = totals(lines);
+    const onlyCL = lines.every((l) => l.kind === 'contacts');
+    const tip = onlyCL && /^Ship/.test(state.delivery) && t.ship ? (() => { const c = lines.find((l) => l.contacts); const n = c ? boxesToFree(c.contacts) : 0;
+      return `<p class="hint">Add ${n} more box${n > 1 ? 'es' : ''} of ${esc(c.title)}, or any glasses, and shipping is free.</p>`; })() : '';
+    $('#root').innerHTML = `<div class="bag">
+      <section>${lines.map((l, i) => `<div class="line">
+          <img src="/${esc(l.img)}" alt="">
+          <div><div class="line__b">${esc(l.brand)}</div><div class="line__t">${esc(l.title)}</div><div class="line__c">${esc(l.config)}${l.taxable ? ' · HST applies' : ''}</div>
+            <button class="line__x" data-rm="${i}">Remove</button></div>
+          <div class="line__p">${fmt(l.price)}</div></div>`).join('')}
+        <p style="margin-top:14px"><a href="/shop/" style="color:var(--gold-2);font-size:14px">← Keep shopping</a></p></section>
+      <section class="panel" style="align-self:start">
+        <label class="form">Delivery<select id="delivery"><option ${!/^Ship/.test(state.delivery) ? 'selected' : ''}>Pick up at the boutique (Thornhill)</option><option ${/^Ship/.test(state.delivery) ? 'selected' : ''}>Ship to me (Canada)</option></select></label>
+        ${tip}
+        <label class="form">Promo code<span class="promo-row"><input id="code" autocomplete="off" value="${esc(state.code)}"><button class="btn btn--ghost btn--sm" type="button" id="apply">Apply</button></span></label>
+        <div><div class="sumrow"><span>Items</span><span>${fmt(t.items + t.off)}</span></div>
+          ${t.off ? `<div class="sumrow"><span>${esc(t.label)}</span><span>−${fmt(t.off)}</span></div>` : ''}
+          ${/^Ship/.test(state.delivery) ? `<div class="sumrow"><span>Shipping</span><span>${t.ship ? fmt(t.ship) : 'Free'}</span></div>` : ''}
+          <div class="sumrow"><span>HST</span><span>${t.tax ? fmt(t.tax) : 'None (prescription eyewear)'}</span></div>
+          <div class="sumrow sumrow--total"><span>Total</span><span>${fmt(t.total)}</span></div></div>
+        <form class="form" id="f" novalidate>
+          <div class="row2"><label>First name<input id="first" autocomplete="given-name" required></label><label>Last name<input id="last" autocomplete="family-name" required></label></div>
+          <div class="row2"><label>Email<input id="email" type="email" autocomplete="email" required></label><label>Phone<input id="phone" type="tel" autocomplete="tel" required></label></div>
+          ${lines.some((l) => l.rx) ? `<label>Prescription<select id="rx"><option>I’ll email or upload it after</option><option>You have it on file at Leruso</option><option>I’ll book an eye exam first</option></select></label>` : ''}
+          ${lines.some((l) => l.rx) ? `<fieldset class="ins"><legend>Insurance</legend>
+            ${[['none', 'No insurance for this order'], ['self', 'I’ll submit it to my insurance myself', 'We email you an itemized insurance receipt after payment.'],
+               ['direct', 'Leruso submits it for me (direct billing)', 'We bill your plan and you pay only the balance once coverage is confirmed.']]
+              .map(([v, t, d]) => `<label class="ins__opt"><input type="radio" name="ins" value="${v}" ${state.ins === v ? 'checked' : ''}><span><b>${t}</b>${d ? `<small>${d}</small>` : ''}</span></label>`).join('')}
+            ${state.ins === 'direct' ? `<div class="row2"><label>Insurance company<input id="insCo" placeholder="e.g. Sun Life, Manulife, Canada Life"></label><label>Plan / group number<input id="insGroup"></label></div>
+              <div class="row2"><label>Member / certificate ID<input id="insId"></label><label>Plan holder's full name<input id="insHolder"></label></div>
+              <label>You are the plan holder's<select id="insRel"><option>Self (I'm the plan holder)</option><option>Spouse / partner</option><option>Child / dependent</option></select></label>
+              <label class="ins__consent"><input type="checkbox" id="insOk"> I authorize Leruso Eyewear to submit a claim to my insurer on my behalf and to share the prescription and purchase details the insurer needs for this claim.</label>
+              <p class="fine">After you order, please email a photo of the front and back of your insurance card to <a href="mailto:lerusoeyewear@outlook.com" style="color:var(--gold-2)">lerusoeyewear@outlook.com</a>. We'll confirm your coverage before taking payment.</p>` : ''}
+          </fieldset>` : ''}
+          <label>Notes (optional)<textarea id="notes" maxlength="400"></textarea></label>
+          <input id="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label class="ins__consent"><input type="checkbox" id="mkt"> Email me news, new arrivals and offers from Leruso Eyewear. Optional; unsubscribe any time.</label>
+          <p class="err" id="err" role="alert"></p>
+          <p class="fine" style="margin:0">By sending this request you agree to our <a href="/policies/terms/" style="color:var(--gold-2)">Terms of Sale</a> and <a href="/policies/privacy/" style="color:var(--gold-2)">Privacy Policy</a>.</p>
+          <button class="btn btn--gold" type="submit" id="send">Request to buy · ${fmt(t.total)}</button>
+          <p class="fine">No payment is taken here. We confirm your order${lines.some((l) => l.specialOrder) ? ' with the maison' : ''} and send a secure payment link, usually the same day. Questions? <a href="tel:+19058814123" style="color:var(--gold-2)">(905) 881-4123</a>.</p>
+        </form></section></div>`;
+    document.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => { bag.remove(+b.dataset.rm); render(); }));
+    $('#delivery').addEventListener('change', (e) => { state.delivery = e.target.value; keepForm(render); });
+    $('#apply').addEventListener('click', () => { const c = $('#code').value.trim(); const ok = !c || lines.some((l) => codeDiscount(c, l, l.price));
+      state.code = ok ? c : ''; keepForm(render); if (!ok) $('#err').textContent = 'That code isn’t valid for these items.'; });
+    document.querySelectorAll('input[name="ins"]').forEach((r) => r.addEventListener('change', () => { state.ins = r.value; keepForm(render); }));
+    $('#f').addEventListener('submit', (e) => { e.preventDefault(); send(lines, t); });
+  }
+  // Re-render without losing what the customer already typed.
+  // Radios have no id, so they're skipped (re-render sets them from state).
+  function keepForm(fn) { const keep = {}; document.querySelectorAll('#f input,#f select,#f textarea').forEach((el) => (keep[el.id] = el.type === 'checkbox' ? el.checked : el.value)); fn();
+    for (const [id, v] of Object.entries(keep)) { if (!id) continue; const el = $('#' + id); if (el && el.type !== 'radio') el[el.type === 'checkbox' ? 'checked' : 'value'] = v; } }
+
+  async function send(lines, t) {
+    const v = (id) => ($('#' + id) ? $('#' + id).value.trim() : '');
+    if (!v('first') || !v('last')) return ($('#err').textContent = 'Please enter your first and last name.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email'))) return ($('#err').textContent = 'Please enter a valid email address.');
+    if (v('phone').replace(/\D/g, '').length < 10) return ($('#err').textContent = 'Please enter a phone number with area code.');
+    if (state.ins === 'direct' && (!v('insCo') || !v('insId') || !v('insHolder'))) return ($('#err').textContent = 'Please fill in your insurance company, member ID and plan holder, or choose another insurance option.');
+    if (state.ins === 'direct' && !$('#insOk').checked) return ($('#err').textContent = 'Please tick the box to let us submit the claim for you.');
+    const btn = $('#send'); btn.disabled = true; btn.textContent = 'Sending…'; $('#err').textContent = '';
+    try {
+      const r = await fetch(ORDER_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        items: lines.map((l) => ({ slug: l.slug, brand: l.brand, title: l.title, kind: l.kind, config: l.config, price: l.price, specialOrder: l.specialOrder, lens: l.contacts || undefined })),
+        config: `Items ${fmt(t.items)}${t.off ? ` (code ${state.code} −${fmt(t.off)})` : ''} · shipping ${fmt(t.ship)} · HST ${fmt(t.tax)}`, total: t.total,
+        first: v('first'), last: v('last'), email: v('email'), phone: v('phone'), delivery: state.delivery, rx: v('rx'), notes: v('notes'), website: v('website'), marketing: !!($('#mkt') && $('#mkt').checked),
+        insurance: lines.some((l) => l.rx) ? { method: state.ins || 'none', company: v('insCo'), group: v('insGroup'), member: v('insId'), holder: v('insHolder'), relation: v('insRel'), consent: !!($('#insOk') && $('#insOk').checked) } : undefined }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Something went wrong.');
+      bag.clear();
+      $('#root').innerHTML = `<div class="ok-box" style="max-width:640px;margin-top:30px"><p class="eyebrow" style="margin:0">Request received · ref ${esc(j.ref)}</p><h2>Thank you, ${esc(v('first'))}.</h2><p class="fine" style="font-size:14px">We’ll confirm your order and send a secure payment link to ${esc(v('email'))}. Questions: (905) 881-4123.</p>${lines.some((l) => l.rx) ? `<p class="fine" style="font-size:14px">Ordering prescription lenses? Measure your pupillary distance (PD) with your camera in under a minute, so we can make your lenses right: <a class="btn btn--gold btn--sm" style="margin-top:8px" href="/shop/fit/?ref=${encodeURIComponent(j.ref)}">Measure your fit →</a></p>` : ''}</div>`;
+    } catch (err) { $('#err').textContent = err.message + ' Please call (905) 881-4123.'; btn.disabled = false; btn.textContent = `Request to buy · ${fmt(t.total)}`; }
+  }
+  document.querySelectorAll('[data-year]').forEach((e) => (e.textContent = new Date().getFullYear()));
+  render();
+})();
+</script>
+</body>
+</html>

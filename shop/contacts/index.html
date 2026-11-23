@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reorder contact lenses — Leruso Eyewear</title>
+<meta name="description" content="Reorder your contact lenses from Leruso Eyewear in Thornhill: Acuvue, Alcon, CooperVision, Bausch + Lomb. See your price after the manufacturer rebate. Pick up or ship across Canada.">
+<link rel="canonical" href="https://lerusoeyewear.com/shop/contacts/">
+<meta name="theme-color" content="#fbf8f2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230c0b09'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23c9a46a' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../shop.css">
+<style>
+  .steps3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin: 4px 0 40px; }
+  .steps3 div { border-top: 1px solid var(--line); padding-top: 14px; }
+  .steps3 b { font: 400 30px/1 var(--serif); color: var(--gold-2); display: block; margin-bottom: 8px; }
+  .steps3 p { color: #4a443b; font-size: 14.5px; margin: 0; }
+  .cl-list { display: grid; gap: 10px; }
+  .cl-row { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 12px 16px; background: #fff; border: 1px solid rgba(29, 26, 21, .1); border-radius: 10px; text-decoration: none; color: inherit; transition: border-color .4s; }
+  .cl-row:hover { border-color: var(--gold); }
+  .cl-row img { width: 72px; height: 54px; object-fit: contain; }
+  .cl-row__t { font: 400 19px/1.2 var(--serif); }
+  .cl-row__b { font: 500 10px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  .cl-row__p { text-align: right; font-size: 14px; }
+  .cl-row__p small { display: block; color: #4f8a5b; font-size: 12px; margin-top: 3px; }
+  @media (max-width: 520px) { .cl-row { grid-template-columns: 56px minmax(0, 1fr); } .cl-row__p { grid-column: 2; text-align: left; } }
+</style>
+</head>
+<body class="shop-light">
+<header class="shop-nav">
+  <a href="/" class="nav__logo" aria-label="Leruso Eyewear home">LERUSO<span>EYEWEAR</span></a>
+  <nav class="shop-nav__links" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/shop/">Shop</a>
+    <a href="/shop/limited/">Limited</a>
+    <a href="/shop/bag/" data-bag>Bag</a>
+    <a class="btn btn--gold btn--sm" href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book an exam</a>
+  </nav>
+</header>
+
+<main class="shop-wrap">
+  <section class="shop-head">
+    <p class="eyebrow">Contact lenses</p>
+    <h1>Reorder in <em>a minute.</em></h1>
+    <p>Find your lenses, choose how many boxes, and we’ll confirm your prescription and send a secure payment link. A year’s supply usually earns a manufacturer rebate, so we show your price after it.</p>
+  </section>
+  <div class="steps3">
+    <div><b>1</b><p>Find your brand below. It’s printed on your box.</p></div>
+    <div><b>2</b><p>Pick the pack and number of boxes. Bigger orders get bigger rebates.</p></div>
+    <div><b>3</b><p>Pick up in Thornhill or we ship to you. Need a new prescription? <a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener" style="color:var(--gold-2)">Book an exam</a>.</p></div>
+  </div>
+  <div class="tools-row">
+    <input id="q" type="search" placeholder="Search: Acuvue, Biofinity, Dailies…" aria-label="Search lenses">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="cl-list" id="list"></div>
+</main>
+
+<footer class="footer">
+  <div class="footer__mark">LERUSO</div>
+  <div class="footer__cols">
+    <div><h4>Boutique</h4><p>7131 Bathurst St, Unit 105<br>Thornhill, ON L4J 7Z1</p><p><a href="tel:+19058814123">(905) 881-4123</a></p></div>
+    <div><h4>Shop</h4><p><a href="/shop/">All products</a><br><a href="/shop/limited/">Limited Edition</a></p></div>
+    <div><h4>Appointments</h4><p>All insurance plans.<br>Direct billing.</p><p><a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book online →</a></p></div>
+  </div>
+  <p class="footer__legal">© <span data-year>2026</span> Leruso Eyewear Inc. · Brand names are trademarks of their respective owners. · <a href="/policies/">Store policies</a> · <a href="/policies/terms/">Terms</a> · <a href="/policies/privacy/">Privacy</a></p>
+</footer>
+
+<script src="../common.js"></script>
+<script>
+(async () => {
+  const { fmt, esc } = Shop;
+  const $ = (s) => document.querySelector(s);
+  let lenses = [];
+  try { lenses = (await fetch('../products.json', { cache: 'no-cache' }).then((r) => r.json())).filter((p) => p.kind === 'contacts'); }
+  catch { $('#list').innerHTML = '<p class="empty">Could not load. Please call (905) 881-4123.</p>'; return; }
+  lenses.sort((a, b) => a.brand.localeCompare(b.brand) || a.title.localeCompare(b.title));
+  const best = (p) => Math.min(...p.variants.flatMap((v) => (v.rebates || []).map((r) => r.per_box_after)));
+  function render() {
+    const q = $('#q').value.trim().toLowerCase();
+    const list = lenses.filter((p) => !q || (p.brand + ' ' + p.title).toLowerCase().includes(q));
+    $('#count').textContent = `${list.length} lenses`;
+    $('#list').innerHTML = list.map((p) => { const b = best(p);
+      return `<a class="cl-row" href="../product.html?p=${encodeURIComponent(p.slug)}"><img src="../../${esc(p.images[0])}" alt="" loading="lazy">
+        <div><div class="cl-row__b">${esc(p.brand)}</div><div class="cl-row__t">${esc(p.title)}</div></div>
+        <div class="cl-row__p">${p.variants.length > 1 ? 'from ' : ''}${fmt(p.price)}${isFinite(b) ? `<small>as low as ${fmt(b)}/box after rebate</small>` : ''}</div></a>`; }).join('') || '<p class="empty">No match. Call us and we’ll order it for you.</p>';
+  }
+  $('#q').addEventListener('input', render);
+  document.querySelectorAll('[data-year]').forEach((e) => (e.textContent = new Date().getFullYear()));
+  render();
+})();
+</script>
+</body>
+</html>

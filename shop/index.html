@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop — Leruso Eyewear, Thornhill</title>
+<meta name="description" content="Shop designer eyeglasses, sunglasses and contact lenses from Leruso Eyewear in Thornhill: Dior, Gucci, Saint Laurent, Loewe, Givenchy, Montblanc, Tom Ford, Ray-Ban, Versace, Leisure Society and more. Prescription lenses fitted by a licensed optician.">
+<link rel="canonical" href="https://lerusoeyewear.com/shop/">
+<meta name="theme-color" content="#f7f3ec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230c0b09'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23c9a46a' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="shop.css">
+<link rel="stylesheet" href="collection.css">
+</head>
+<body class="shop-light collection">
+<header class="shop-nav">
+  <a href="/" class="nav__logo" aria-label="Leruso Eyewear home">LERUSO<span>EYEWEAR</span></a>
+  <nav class="shop-nav__links" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/shop/">Shop</a>
+    <a href="/shop/limited/">Limited</a>
+    <a class="hide-sm" href="/shop/contacts/">Contact lenses</a>
+    <a href="/shop/try-on/">Try on</a>
+    <a href="/shop/bag/" data-bag>Bag</a>
+    <a class="btn btn--gold btn--sm hide-sm" href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book an exam</a>
+  </nav>
+</header>
+
+<main>
+  <section class="c-hero">
+    <p class="c-hero__kicker">Shop · Leruso Boutique</p>
+    <h1>The <em>collection.</em></h1>
+    <p class="c-hero__sub">The houses we carry, at the maison's suggested price. Pieces in the boutique ship in 1–2 days; everything else is ordered for you.</p>
+    <nav class="c-houses" id="houses" aria-label="Houses"></nav>
+  </section>
+
+  <div class="c-bar">
+    <div class="c-tabs" role="group" aria-label="Category">
+      <button class="c-tab" data-kind="all" aria-pressed="true">All</button>
+      <button class="c-tab" data-kind="glasses" aria-pressed="false">Eyeglasses</button>
+      <button class="c-tab" data-kind="sunglasses" aria-pressed="false">Sunglasses</button>
+      <a class="c-tab" href="/shop/contacts/">Contact lenses</a>
+      <a class="c-tab c-tab--lux" href="/shop/limited/">Limited Edition</a>
+    </div>
+    <div class="c-tools">
+      <input id="q" type="search" placeholder="Search a house or model" aria-label="Search">
+      <select id="sort" aria-label="Sort">
+        <option value="new">Featured</option>
+        <option value="low">Price, low to high</option>
+        <option value="high">Price, high to low</option>
+      </select>
+      <label class="c-check"><input type="checkbox" id="instock"> In the boutique</label>
+    </div>
+  </div>
+
+  <div class="c-meta"><span id="count"></span><span id="active"></span></div>
+  <div class="c-grid" id="grid" aria-live="polite"></div>
+
+  <div class="c-pager">
+    <button class="c-more" id="more" hidden>Show more</button>
+    <label class="c-per">Show <select id="per" aria-label="Frames per page">
+      <option>25</option><option selected>50</option><option>100</option><option>200</option><option>600</option>
+    </select> per page</label>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer__mark">LERUSO</div>
+  <div class="footer__cols">
+    <div><h4>Boutique</h4><p>7131 Bathurst St, Unit 105<br>Thornhill, ON L4J 7Z1</p><p><a href="tel:+19058814123">(905) 881-4123</a></p></div>
+    <div><h4>Shop</h4><p><a href="/shop/">The collection</a><br><a href="/shop/limited/">Limited Edition</a><br><a href="/shop/contacts/">Reorder contact lenses</a><br><a href="/policies/">Shipping, returns &amp; warranty</a></p></div>
+    <div><h4>Appointments</h4><p>All insurance plans.<br>Direct billing.</p><p><a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book online →</a></p></div>
+  </div>
+  <p class="footer__legal">© <span data-year>2026</span> Leruso Eyewear Inc. · Brand names are trademarks of their respective owners. · <a href="/policies/">Store policies</a> · <a href="/policies/terms/">Terms</a> · <a href="/policies/privacy/">Privacy</a></p>
+</footer>
+
+<script src="common.js"></script>
+<script>
+(async () => {
+  const { esc, priceHTML, promosReady } = Shop;
+  const $ = (s) => document.querySelector(s);
+  let all = [], tryable = {};
+  fetch('tryon.json', { cache: 'no-cache' }).then((r) => r.json()).then((t) => { tryable = t; document.querySelectorAll('.c-card').length && render(); }).catch(() => {});
+  try {
+    const [cat, legacy] = await Promise.all([fetch('catalog.json', { cache: 'no-cache' }).then((r) => r.json()), fetch('products.json', { cache: 'no-cache' }).then((r) => r.json()), promosReady]);
+    const have = new Set(cat.map((x) => x.brand));
+    const LEGACY_OK = ['Tom Ford', 'Chopard', 'Fred', 'Vintage', 'Jacques Marie Mage', 'Zilli', 'Silhouette', 'ic! berlin', 'T Henri', 'Akoni', 'Dita'];
+    const extra = legacy.filter((p) => p.kind !== 'contacts' && LEGACY_OK.includes(p.brand) && !have.has(p.brand)).map((p) => ({ ...p, img: p.images[0], img2: p.images[1], legacy: true }));
+    all = cat.concat(extra);
+  } catch { $('#grid').innerHTML = '<p class="empty">The collection could not load. Please call (905) 881-4123.</p>'; return; }
+
+  // Featured (Parham): pieces in the boutique first, then special orders. Within each, the most luxurious houses first,
+  // working down; inside a tier, houses are woven together and the higher-priced pieces lead.
+  const TIER = { 'Leisure Society': 1, 'Jacques Marie Mage': 1, 'T Henri': 1, 'Dita': 1, 'Fred': 1, 'Chopard': 1,
+    'Dior': 2, 'Tom Ford': 2, 'Gucci': 2, 'Saint Laurent': 2, 'Loewe': 2, 'Givenchy': 2,
+    'Montblanc': 3, 'Dunhill': 3, 'Versace': 3, 'Ralph Lauren': 3,
+    'Ray-Ban Meta': 4, 'Ray-Ban': 4, 'Polo Ralph Lauren': 4, 'Ralph': 4 };
+  const rank = {}, seen = {};
+  const byPrice = [...all].sort((a, c) => (c.price || 0) - (a.price || 0));
+  for (const p of byPrice) { const k = (p.inStore ? 'a' : 'b') + p.brand; seen[k] = (seen[k] || 0) + 1;
+    rank[p.slug] = (p.inStore ? 0 : 1e7) + (TIER[p.brand] || 4) * 1e6 + seen[k] * 100 + (p.brand.charCodeAt(0) % 50); }
+
+  // links from the home page: /shop/#glasses, #sunglasses go straight to that part of the collection; #contacts has its own page
+  if (location.hash === '#contacts') { location.replace('/shop/contacts/'); return; }
+  const params = new URLSearchParams(location.search);
+  let house = params.get('brand') || '', kind = (location.hash || '').replace('#', '') || 'all', page = 50, shown = 50;
+  const houses = [...new Set(all.map((p) => p.brand))].sort();
+  $('#houses').innerHTML = `<button data-h="" aria-pressed="${!house}">All houses</button>` + houses.map((h) => `<button data-h="${esc(h)}" aria-pressed="${h === house}">${esc(h)}</button>`).join('');
+  $('#houses').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    house = b.dataset.h; $('#houses').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    history.replaceState(null, '', location.pathname + (house ? '?brand=' + encodeURIComponent(house) : '') + location.hash); shown = page; render();
+  }));
+
+  const card = (p) => {
+    const href = `product.html?p=${encodeURIComponent(p.slug)}${p.legacy ? '' : '&b=' + encodeURIComponent(p.brand)}`;
+    const note = p.inStore ? '<span class="c-note c-note--stock">In the boutique</span>' : p.limited ? '<span class="c-note">Limited edition</span>' : p.isNew ? '<span class="c-note">New season</span>' : '';
+    return `<a class="c-card" href="${href}">
+      <div class="c-card__img">${note}
+        <img src="../${esc(p.img)}" alt="${esc(p.brand + ' ' + p.title)}" loading="lazy" width="600" height="450">
+        ${p.img2 ? `<img class="c-card__alt" src="../${esc(p.img2)}" alt="" loading="lazy" width="600" height="450">` : ''}
+        ${tryable[p.slug] ? `<span class="c-try" data-try="${esc(p.slug)}" role="link" tabindex="0"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="9" cy="10" r=".6" fill="currentColor"/><circle cx="15" cy="10" r=".6" fill="currentColor"/><path d="M9 15c1.6 1.4 4.4 1.4 6 0"/></svg> Try on</span>` : ''}
+        <span class="c-cmp" data-cmp="${esc(p.slug)}" role="button" tabindex="0" aria-pressed="${Shop.compare.has(p.slug)}">${Shop.compare.has(p.slug) ? '✓ Comparing' : '+ Compare'}</span></div>
+      <div class="c-card__body"><p class="c-card__brand">${esc(p.brand)}</p><h3 class="c-card__title">${esc(p.title)}</h3>
+        <p class="c-card__price">${priceHTML(p)}${p.n > 1 ? `<span>${p.n} colours</span>` : ''}</p></div></a>`;
+  };
+  function render() {
+    const q = $('#q').value.trim().toLowerCase(), s = $('#sort').value, st = $('#instock').checked;
+    let list = all.filter((p) => (kind === 'all' || p.kind === kind) && (!house || p.brand === house) && (!st || p.inStore) && (!q || (p.brand + ' ' + p.title).toLowerCase().includes(q)));
+    if (s === 'low') list.sort((a, c) => (a.price || 1e9) - (c.price || 1e9)); else if (s === 'high') list.sort((a, c) => (c.price || 0) - (a.price || 0)); else list.sort((a, c) => rank[a.slug] - rank[c.slug]);
+    $('#count').textContent = `${list.length.toLocaleString('en-CA')} piece${list.length === 1 ? '' : 's'}`;
+    $('#active').innerHTML = house ? `<button class="c-clear" id="clearHouse">${esc(house)} ✕</button>` : '';
+    if ($('#clearHouse')) $('#clearHouse').addEventListener('click', () => $('#houses button[data-h=""]').click());
+    $('#grid').innerHTML = list.slice(0, shown).map(card).join('') || '<p class="empty">Nothing matches yet. Try another house or search.</p>';
+    $('#more').hidden = list.length <= shown;
+    $('#more').textContent = `Show ${Math.min(page, list.length - shown)} more`;
+  }
+  const setKind = (k) => { kind = ['glasses', 'sunglasses'].includes(k) ? k : 'all'; document.querySelectorAll('.c-tab[data-kind]').forEach((t) => t.setAttribute('aria-pressed', t.dataset.kind === kind)); shown = page; render(); };
+  document.querySelectorAll('.c-tab[data-kind]').forEach((t) => t.addEventListener('click', () => { history.replaceState(null, '', location.pathname + location.search + (t.dataset.kind === 'all' ? '' : '#' + t.dataset.kind)); setKind(t.dataset.kind); }));
+  ['q', 'sort', 'instock'].forEach((id) => $('#' + id).addEventListener('input', () => { shown = page; render(); }));
+  $('#per').addEventListener('change', (e) => { page = +e.target.value; shown = page; render(); });
+  $('#more').addEventListener('click', () => { shown += page; render(); });
+  // "Try on" chip on a card opens the try-on with that frame instead of the product page
+  // "+ Compare" chip: up to 3 frames side by side on /shop/compare/
+  $('#grid').addEventListener('click', (e) => { const c = e.target.closest('[data-cmp]'); if (!c) return; e.preventDefault(); e.stopPropagation();
+    const it = all.find((x) => x.slug === c.dataset.cmp); if (!it) return;
+    if (!Shop.compare.toggle({ slug: it.slug, b: it.legacy ? '' : it.brand, brand: it.brand, title: it.title, img: it.img })) { c.textContent = 'Max 3'; setTimeout(render, 1200); return; }
+    render(); }, true);
+  $('#grid').addEventListener('click', (e) => { const t = e.target.closest('[data-try]'); if (!t) return; e.preventDefault(); location.href = '/shop/try-on/?p=' + encodeURIComponent(t.dataset.try); });
+  document.querySelectorAll('[data-year]').forEach((e) => (e.textContent = new Date().getFullYear()));
+  setKind(kind);
+  if (['glasses', 'sunglasses'].includes(kind) || house) requestAnimationFrame(() => document.querySelector('.c-bar').scrollIntoView({ block: 'start' }));
+})();
+</script>
+</body>
+</html>

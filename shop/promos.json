@@ -1,0 +1,38 @@
+{
+  "_help": "Each promo: id, label, scope {all|brands|slugs|kinds}, type percent|amount, value, start/end (YYYY-MM-DD, Toronto), optional code (checkout only). Best single promo wins. Luxottica brands have MAP: prefer a code.",
+  "promos": [
+    {
+      "id": "eplx4-boutique",
+      "label": "Boutique price",
+      "scope": {
+        "slugs": [
+          "dita-eplx04-01"
+        ]
+      },
+      "type": "amount",
+      "value": 1300
+    },
+    {
+      "id": "a3u-special",
+      "label": "Boutique special (discontinued)",
+      "scope": {
+        "slugs": [
+          "dior-cd40071u"
+        ]
+      },
+      "type": "amount",
+      "value": 300
+    },
+    {
+      "id": "reflected-special",
+      "label": "Boutique special (older model)",
+      "scope": {
+        "slugs": [
+          "dior-reflected-tk1ir"
+        ]
+      },
+      "type": "amount",
+      "value": 300
+    }
+  ]
+}

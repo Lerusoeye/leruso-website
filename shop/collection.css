@@ -1,0 +1,71 @@
+/* The collection page (Oct 29 redesign): fewer, larger pieces per row, quiet controls, editorial type.
+   Builds on styles.css tokens and the shop-light palette. */
+body.collection { background: #ffffff; }
+body.collection main { width: 100%; max-width: none; margin: 0; padding: 0 clamp(12px, 1.8vw, 30px) 100px; box-sizing: border-box; }
+body.collection .c-grid, body.collection .c-bar, body.collection .c-meta { max-width: 2200px; margin-left: auto; margin-right: auto; }
+
+/* Hero */
+.c-hero { text-align: center; padding: clamp(56px, 8vw, 110px) 0 36px; }
+.c-hero__kicker { font: 500 10.5px/1 var(--sans); letter-spacing: .42em; text-transform: uppercase; color: var(--gold); margin: 0 0 22px; }
+.c-hero h1 { font: 300 clamp(48px, 7vw, 96px)/.95 var(--serif); letter-spacing: -.01em; margin: 0; }
+.c-hero h1 em { color: var(--gold); }
+.c-hero__sub { max-width: 52ch; margin: 22px auto 0; font: 300 18px/1.6 var(--serif); color: #5a5246; }
+
+/* Houses: a quiet line of names, not buttons */
+.c-houses { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; margin: 38px auto 0; max-width: 1100px; }
+.c-houses button { background: none; border: 0; padding: 4px 0; cursor: pointer; font: 400 12px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase;
+  color: #8a8174; border-bottom: 1px solid transparent; transition: color .3s, border-color .3s; }
+.c-houses button:hover { color: var(--ivory); }
+.c-houses button[aria-pressed="true"] { color: var(--ivory); border-bottom-color: var(--gold); }
+
+/* Category + tools bar */
+.c-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 30px; padding: 22px 0; margin-top: 34px;
+  border-top: 1px solid rgba(169, 130, 61, .25); border-bottom: 1px solid rgba(169, 130, 61, .25); position: sticky; top: 62px; z-index: 5; background: rgba(255, 255, 255, .96); backdrop-filter: blur(8px); }
+.c-tabs { display: flex; flex-wrap: wrap; gap: 4px 26px; }
+.c-tab { background: none; border: 0; padding: 6px 0; cursor: pointer; font: 500 11px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: #8a8174;
+  text-decoration: none; border-bottom: 1px solid transparent; }
+.c-tab[aria-pressed="true"] { color: var(--ivory); border-bottom-color: var(--ivory); }
+.c-tab--lux { color: var(--gold); }
+.c-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.c-tools input[type="search"], .c-tools select, .c-per select { height: 38px; border: 0; border-bottom: 1px solid rgba(29, 26, 21, .25); background: transparent;
+  font: 400 13px var(--sans); color: var(--ivory); padding: 0 4px; border-radius: 0; }
+.c-tools input[type="search"] { width: 220px; }
+.c-check { display: inline-flex; gap: 8px; align-items: center; font: 400 13px var(--sans); color: var(--ivory); cursor: pointer; white-space: nowrap; }
+.c-check input { accent-color: var(--gold); }
+
+.c-meta { display: flex; gap: 14px; align-items: center; justify-content: space-between; padding: 22px 0 6px; font: 400 12px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: #8a8174; }
+.c-clear { background: none; border: 1px solid var(--gold); color: var(--ivory); border-radius: 999px; padding: 6px 12px; font: 500 11px var(--sans); letter-spacing: .1em; cursor: pointer; }
+
+/* Grid: three large pieces per row on white marble (JMM-style gallery) */
+.c-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 10px; padding-top: 14px; }
+@media (max-width: 900px) { .c-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 8px; } .c-tools input[type="search"] { width: 100%; } .c-bar { top: 56px; } }
+@media (max-width: 520px) { .c-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.c-card { display: grid; gap: 14px; text-decoration: none; color: inherit; }
+.c-card__img { position: relative; aspect-ratio: 3 / 2; overflow: hidden; display: grid; place-items: center;
+  background: #f6f6f4 url(/assets/img/marble.jpg) 30% 40% / 170% auto no-repeat; }
+.c-card:nth-child(3n+2) .c-card__img { background-position: 70% 10%; }
+.c-card:nth-child(3n) .c-card__img { background-position: 10% 85%; }
+.c-card:nth-child(4n+1) .c-card__img { background-size: 220% auto; }
+.c-card__img img { width: 78%; height: 78%; object-fit: contain; mix-blend-mode: multiply; filter: contrast(1.04); transition: transform 1.4s var(--ease), opacity .8s var(--ease); }
+.c-card__img .c-card__alt { position: absolute; inset: 11%; width: 78%; height: 78%; opacity: 0; }
+.c-card:hover .c-card__img img:first-of-type { transform: scale(1.035); }
+.c-card:hover .c-card__img .c-card__alt { opacity: 1; }
+.c-card:hover .c-card__img:has(.c-card__alt) img:first-of-type { opacity: 0; }
+.c-note { position: absolute; top: 14px; left: 16px; z-index: 1; font: 500 9.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: #6f6a62; }
+.c-note--stock { color: #2f5f3c; }
+.c-note--stock::before { content: "● "; font-size: 7px; vertical-align: 2px; }
+.c-card__body { text-align: center; display: grid; gap: 5px; }
+.c-card__brand { margin: 0; font: 500 9.5px/1 var(--sans); letter-spacing: .32em; text-transform: uppercase; color: var(--gold); }
+.c-card__title { margin: 0; font: 500 12px/1.35 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: #1d1a15; }
+.c-card__price { margin: 0; font: 400 12.5px/1.4 var(--sans); color: #6f6a62; letter-spacing: .06em; }
+.c-card__price span { display: inline; font-size: 11px; color: #a39b8f; letter-spacing: .08em; margin-left: 8px; }
+.c-card__price .was { color: #a39b8f; }
+.c-card__price .now { color: #a33b24; }
+
+/* Pager */
+.c-pager { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 60px; }
+.c-more { background: none; border: 1px solid var(--ivory); color: var(--ivory); padding: 16px 40px; font: 500 11px var(--sans); letter-spacing: .26em; text-transform: uppercase; cursor: pointer; transition: background .3s, color .3s; }
+.c-more:hover { background: var(--ivory); color: #fff; }
+.c-per { font: 400 12px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: #8a8174; display: inline-flex; gap: 8px; align-items: center; }
+.c-bar { scroll-margin-top: 90px; }

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your fitting — Leruso Eyewear</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230c0b09'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23c9a46a' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../shop.css">
+<link rel="stylesheet" href="../collection.css">
+<style>
+  .fit { max-width: 980px; margin: 0 auto; padding: 44px clamp(16px, 4vw, 34px) 90px; }
+  .fit h1 { font: 300 clamp(40px, 5.5vw, 66px)/1 var(--serif); margin: 8px 0 14px; }
+  .fit h1 em { color: var(--gold); }
+  .fit h2 { font: 400 26px var(--serif); margin: 34px 0 10px; }
+  .fit__lede { font: 300 19px/1.55 var(--serif); color: #3b352c; max-width: 52ch; }
+  .steps { counter-reset: s; display: grid; gap: 12px; margin: 16px 0; padding: 0; list-style: none; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 32px 1fr; gap: 12px; font: 400 15px/1.55 var(--sans); color: #3b352c; }
+  .steps li::before { content: counter(s); width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--gold); display: grid; place-items: center; font: 400 17px var(--serif); color: var(--gold); }
+  .frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .frames button { background: #f6f6f4; border: 1px solid transparent; padding: 10px; cursor: pointer; display: grid; gap: 6px; text-align: center; font: 500 10px var(--sans); letter-spacing: .1em; text-transform: uppercase; color: #3b352c; }
+  .frames button img { width: 100%; height: 60px; object-fit: contain; mix-blend-mode: multiply; }
+  .frames button[aria-pressed="true"] { border-color: var(--gold); background: #fbf4e6; }
+  .search { width: 100%; height: 40px; border: 0; border-bottom: 1px solid rgba(29,26,21,.25); font: 400 14px var(--sans); background: transparent; margin-bottom: 12px; }
+  .card { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid rgba(169,130,61,.35); margin: 18px 0; font-size: 14px; line-height: 1.5; color: #3b352c; }
+  .card input { margin-top: 4px; accent-color: var(--gold); }
+
+  .cam { position: fixed; inset: 0; z-index: 1000; background: #0c0b09; color: #f5f0e6; }
+  .cam[hidden] { display: none; }
+  .cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .cam__top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: max(12px, env(safe-area-inset-top)) 14px 10px; background: linear-gradient(rgba(12,11,9,.6), transparent); }
+  .cam__x { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(245,240,230,.35); background: rgba(12,11,9,.35); color: #fff; font-size: 18px; cursor: pointer; }
+  .cam__say { position: absolute; left: 50%; top: 13%; transform: translateX(-50%); text-align: center; font: 400 clamp(17px, 2.4vw, 22px)/1.3 var(--serif); text-shadow: 0 1px 6px rgba(0,0,0,.7); width: min(90vw, 560px); }
+  .cam__count { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 300 120px var(--serif); color: var(--gold); text-shadow: 0 2px 12px rgba(0,0,0,.6); pointer-events: none; }
+  .cam__checks { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 16px 14px max(18px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(12,11,9,.75) 35%); }
+  .cam__checks span { font: 500 11px var(--sans); letter-spacing: .08em; padding: 8px 12px; border-radius: 999px; background: rgba(245,240,230,.12); color: rgba(245,240,230,.8); border: 1px solid rgba(245,240,230,.2); }
+  .cam__checks span.ok { background: rgba(201,164,106,.22); border-color: var(--gold); color: #f3dfb8; }
+  .cam__checks span.ok::before { content: '✓ '; }
+
+  .res { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 1fr); gap: 28px; margin-top: 20px; }
+  @media (max-width: 860px) { .res { grid-template-columns: 1fr; } }
+  .res__img { position: relative; background: #0c0b09; }
+  .res__img canvas { width: 100%; height: auto; display: block; touch-action: none; }
+  .res table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .res td { padding: 9px 0; border-bottom: 1px solid rgba(29,26,21,.1); }
+  .res td:last-child { text-align: right; font: 400 20px var(--serif); color: #1d1a15; }
+  .res td small { display: block; color: #8a8174; font-size: 11.5px; }
+  .tag { font: 500 9.5px var(--sans); letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: #f1ebe0; color: #8a6a35; margin-left: 6px; vertical-align: middle; }
+  .cal { border: 1px solid var(--gold); padding: 14px; margin: 14px 0; font-size: 13.5px; line-height: 1.5; }
+  .row-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+</style>
+</head>
+<body class="shop-light collection">
+<header class="shop-nav">
+  <a href="/" class="nav__logo" aria-label="Leruso Eyewear home">LERUSO<span>EYEWEAR</span></a>
+  <nav class="shop-nav__links" aria-label="Main"><a href="/">Home</a><a href="/shop/">Shop</a></nav>
+</header>
+
+<main class="fit" id="main">
+  <p class="c-hero__kicker" style="text-align:left;margin:0">Your fitting · Order <span id="ref">—</span></p>
+  <h1>Measure your <em>fit.</em></h1>
+  <p class="fit__lede">We place your frame on your face with the camera, check your position point by point, then measure your pupillary distance and your fitting heights for that exact frame. Our optician reviews every measurement before your lenses are made.</p>
+
+  <section id="s1">
+    <h2>1 · Your frame</h2>
+    <p class="fine" id="frameNote">Choose the frame you ordered.</p>
+    <input class="search" id="fq" type="search" placeholder="Search a house or model" aria-label="Search frames">
+    <div class="frames" id="frames"></div>
+  </section>
+
+  <section id="s2">
+    <h2>2 · Before you start</h2>
+    <ol class="steps">
+      <li>Take your glasses off. Stand facing a window or a bright lamp, so your face is evenly lit.</li>
+      <li>Hold your phone or laptop camera straight in front of you, at eye level, about an arm's length away.</li>
+      <li>Look straight into the camera lens. Follow the guides: each check turns gold when it is right.</li>
+      <li>When everything is gold, hold still for 3 seconds. We take a series of measurements and keep the steadiest.</li>
+    </ol>
+    <label class="card"><input type="checkbox" id="useCard" checked><span><b>For best accuracy, use a card.</b> Any plastic card the size of a bank card works (loyalty, library or gift card, back side out; never show your card number). Hold it flat and level against the middle of your forehead, just above your eyebrows. Afterwards you will mark its two edges, and we use its known width (85.6 mm) as a ruler.</span></label>
+    <button class="btn btn--gold" id="start">Open the camera</button>
+    <p class="err" id="err0"></p>
+  </section>
+
+  <section id="s3" hidden>
+    <h2>3 · Your measurements</h2>
+    <div class="res">
+      <div>
+        <div class="res__img"><canvas id="shot"></canvas></div>
+        <div class="cal" id="calBox" hidden><b>Mark the card.</b> Drag the two gold lines onto the left and right edges of the card on your forehead. <div class="row-btns"><button class="btn btn--gold btn--sm" id="calDone">Use the card</button><button class="btn btn--ghost btn--sm" id="calSkip">Skip</button></div></div>
+      </div>
+      <div>
+        <table id="tbl"></table>
+        <p class="fine" id="acc" style="margin-top:12px"></p>
+        <label class="c-check" style="margin-top:12px"><input type="checkbox" id="sendPhoto"> Include this photo so the optician can double-check the points (optional)</label>
+        <p class="fine" style="margin:6px 0 0">Your camera image stays on your device. Only your measurements, and the photo if you tick the box, are sent to Leruso. <a href="/policies/privacy/" style="color:var(--gold-2)">Privacy</a></p>
+        <div class="row-btns"><button class="btn btn--gold" id="send">Send to Leruso</button><button class="btn btn--ghost" id="again">Measure again</button></div>
+        <p class="err" id="err"></p>
+      </div>
+    </div>
+  </section>
+  <p class="fine" style="margin-top:28px">Prefer to be measured in person? <a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener" style="color:var(--gold-2)">Book a fitting at the boutique</a> or call (905) 881-4123.</p>
+</main>
+
+<div class="cam" id="cam" hidden>
+  <canvas id="cv"></canvas>
+  <div class="cam__top"><button class="cam__x" id="camX" aria-label="Close">✕</button><span id="camFrame" style="font:500 11px var(--sans);letter-spacing:.16em;text-transform:uppercase"></span><span style="width:40px"></span></div>
+  <p class="cam__say" id="say">Loading…</p>
+  <div class="cam__count" id="count" hidden></div>
+  <div class="cam__checks" id="checks"></div>
+</div>
+
+<script src="../common.js"></script>
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+import { headPose, seat, sub, add, mul, dot, d2, IRIS_MM } from '../vto-core.js';
+const $ = (s) => document.querySelector(s);
+const { esc } = Shop;
+const ref = (new URLSearchParams(location.search).get('ref') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+$('#ref').textContent = ref || '—';
+const API = 'https://book.lerusoeyewear.com';
+const CARD_MM = 85.6;
+// ?wear=1: the customer wears the real frame (progressives). No virtual frame; we measure PD and send a clean,
+// sharp photo so the optician marks the fitting heights on the real frame.
+const WEAR = new URLSearchParams(location.search).get('wear') === '1';
+if (WEAR) {
+  document.querySelector('#s1').hidden = true;
+  const st = document.querySelectorAll('.steps li');
+  st[0].innerHTML = '<b>Put on your new frame</b> (the one you are having lenses made for). Stand facing a window or a bright lamp, so your face is evenly lit.';
+  st[3].textContent = 'When everything is gold, hold still for 3 seconds. We measure your pupils and take a sharp photo of you wearing the frame for the optician.';
+  document.querySelector('.fit__lede').textContent = 'Wearing your new frame, follow the gold guides. We measure your pupillary distance and send a photo to our optician, who marks your fitting heights on the frame exactly as in the boutique.';
+  document.querySelector('#sendPhoto').checked = true; document.querySelector('#sendPhoto').disabled = true;
+  document.querySelector('#sendPhoto').parentElement.lastChild.textContent = ' The photo is sent to our optician to mark your fitting heights (needed for progressive lenses).';
+}
+
+/* ---------- 1 · frame ---------- */
+let frames = {}, chosen = null, ordered = [];
+Promise.all([fetch('/vto/vto.json').then((r) => r.json()),
+  ref ? fetch(`${API}/api/order-frames?ref=${encodeURIComponent(ref)}`).then((r) => (r.ok ? r.json() : { frames: [] })).catch(() => ({ frames: [] })) : { frames: [] }])
+  .then(([j, o]) => {
+    frames = j; ordered = (o.frames || []).map((x) => x.slug).filter((s) => frames[s]);
+    if (ordered.length) { chosen = ordered[0]; $('#frameNote').textContent = ordered.length > 1 ? 'These are the frames on your order. Choose the one to measure.' : 'This is the frame on your order.'; }
+    renderFrames();
+  });
+function renderFrames() {
+  const q = $('#fq').value.trim().toLowerCase();
+  let list = ordered.length && !q ? ordered : Object.keys(frames).filter((s) => !q || (frames[s].brand + ' ' + frames[s].title).toLowerCase().includes(q));
+  list = list.sort((a, b) => (b === chosen) - (a === chosen) || frames[b].inStore - frames[a].inStore).slice(0, 60);
+  $('#frames').innerHTML = list.map((s) => `<button data-s="${esc(s)}" aria-pressed="${s === chosen}"><img src="/vto/${esc(s)}.webp" alt="" loading="lazy">${esc(frames[s].brand)}<br>${esc(frames[s].title)}</button>`).join('') || '<p class="fine">No frames match.</p>';
+  $('#frames').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { chosen = b.dataset.s; renderFrames(); }));
+}
+$('#fq').addEventListener('input', renderFrames);
+
+/* ---------- 2 · camera ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d', { willReadFrequently: true });
+let lm, video, F = null, running = false, lastT = 0, okRun = 0, burst = null, still = null;
+function loadImg(src) { return new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; }); }
+function size() { const d = Math.min(devicePixelRatio || 1, 2); cv.width = Math.round(innerWidth * d); cv.height = Math.round(innerHeight * d); }
+addEventListener('resize', size);
+$('#start').addEventListener('click', async () => {
+  if (!chosen && !WEAR) { $('#err0').textContent = 'Please choose your frame first.'; return; }
+  if (!(await window.ageGate())) return;
+  $('#err0').textContent = ''; $('#cam').hidden = false; document.documentElement.style.overflow = 'hidden'; size();
+  $('#camFrame').textContent = WEAR ? 'Wearing your frame' : frames[chosen].brand + ' ' + frames[chosen].title; $('#say').textContent = 'Starting the camera…';
+  try {
+    F = WEAR ? null : { f: frames[chosen], img: await loadImg('/vto/' + chosen + '.webp') };
+    video = document.createElement('video'); video.playsInline = true; video.muted = true;
+    video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    await video.play();
+    if (!lm) {
+      $('#say').textContent = 'Loading face tracking…';
+      const files = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+      lm = await FaceLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task', delegate: 'GPU' }, runningMode: 'VIDEO', numFaces: 1 });
+    }
+    okRun = 0; burst = null; running = true; requestAnimationFrame(loop);
+  } catch (e) { $('#say').textContent = 'We could not open your camera. Please allow camera access, or book a fitting at the boutique.'; }
+});
+function stopCam() { running = false; $('#cam').hidden = true; document.documentElement.style.overflow = ''; if (video && video.srcObject) video.srcObject.getTracks().forEach((t) => t.stop()); }
+$('#camX').addEventListener('click', stopCam);
+
+const CHECKS = [['face', 'Face found'], ['centre', 'Centred'], ['dist', 'Distance'], ['level', 'Head level'], ['straight', 'Facing straight'], ['chin', 'Chin level'], ['eyes', 'Eyes open'], ['light', 'Good light'], ['still', 'Still']];
+let prevPm = null;
+function loop(t) {
+  if (!running) return;
+  const sw = video.videoWidth, sh = video.videoHeight, s = Math.max(cv.width / sw, cv.height / sh), dw = sw * s, dh = sh * s, ox = (cv.width - dw) / 2, oy = (cv.height - dh) / 2;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.save(); ctx.translate(cv.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, ox, oy, dw, dh); ctx.restore();
+  let L = null; try { lastT = Math.max(lastT + 1, t); L = lm.detectForVideo(video, lastT).faceLandmarks[0]; } catch { /* warming up */ }
+  const ok = { face: !!L };
+  let P = null, pose = null, said = 'Look straight into the camera.';
+  if (L) {
+    P = (i) => ({ x: cv.width - (ox + L[i].x * dw), y: oy + L[i].y * dh, z: L[i].z * dw });
+    pose = headPose(P);
+    const D = distanceMm(pose.irisPx / s, sw, sh);
+    ok.centre = Math.abs(pose.pm.x - cv.width / 2) < cv.width * .08 && pose.pm.y > cv.height * .3 && pose.pm.y < cv.height * .55;
+    ok.dist = D > 330 && D < 700;
+    ok.level = Math.abs(pose.roll) < .035;
+    ok.straight = Math.abs(pose.yaw) < .045;
+    ok.chin = Math.abs(pose.pitch) < .12;
+    const ear = (u, d, a, b) => d2(P(u), P(d)) / d2(P(a), P(b));
+    ok.eyes = ear(159, 145, 33, 133) > .2 && ear(386, 374, 263, 362) > .2;
+    ok.light = lightOK(P);
+    ok.still = !!prevPm && d2(prevPm, pose.pm) / pose.mm < .6; prevPm = pose.pm;
+    said = !ok.dist ? (D >= 700 ? 'Come a little closer.' : 'Move back a little.') : !ok.centre ? 'Move so your eyes sit on the gold cross.' : !ok.level ? 'Keep your head level, both eyes on the line.'
+      : !ok.straight ? 'Turn your face straight to the camera.' : !ok.chin ? 'Keep your chin level, not up or down.' : !ok.eyes ? 'Keep your eyes open, look into the lens.'
+      : !ok.light ? 'Find more even light on your face.' : !ok.still ? 'Hold still…' : 'Perfect. Hold still.';
+    const fit = F ? seat(F.f, P, pose) : null;
+    if (fit) { ctx.save(); ctx.setTransform(fit.T.a, fit.T.b, fit.T.c, fit.T.d, fit.T.e, fit.T.f); ctx.drawImage(F.img, 0, 0); ctx.restore(); }
+    if (burst) burst.push(measure(P, pose, fit, sw, sh, s));
+  }
+  const all = CHECKS.every(([k]) => ok[k]);
+  guides(P, pose, all);
+  $('#checks').innerHTML = CHECKS.map(([k, n]) => `<span class="${ok[k] ? 'ok' : ''}">${n}</span>`).join('');
+  $('#say').textContent = burst ? 'Measuring… hold still.' : said;
+  okRun = all ? okRun + 1 : 0;
+  if (!burst && okRun > 0) { $('#count').hidden = false; $('#count').textContent = Math.max(1, 3 - Math.floor(okRun / 30)); if (okRun >= 90) { burst = []; $('#count').hidden = true; } }
+  else if (!all) $('#count').hidden = true;
+  if (burst && !all && burst.length < 12) burst = null;                    // moved before enough samples: start again
+  if (burst && (burst.length >= 36 || (!all && burst.length >= 12))) return finish();
+  requestAnimationFrame(loop);
+}
+// Distance from the camera, from the iris size and a typical front camera field of view (~70° diagonal).
+function distanceMm(irisSrcPx, sw, sh) { const f = Math.hypot(sw, sh) / 2 / Math.tan(35 * Math.PI / 180); return f * IRIS_MM / irisSrcPx; }
+function lightOK(P) {
+  const c = P(1), r = Math.max(8, d2(P(234), P(454)) * .18);
+  try { const d = ctx.getImageData(Math.max(0, c.x - r), Math.max(0, c.y - r), r * 2, r * 2).data; let sum = 0; for (let i = 0; i < d.length; i += 16) sum += d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11; const m = sum / (d.length / 16); return m > 70 && m < 225; } catch { return true; }
+}
+function guides(P, pose, all) {
+  const g = all ? '#c9a46a' : 'rgba(255,255,255,.75)', W = cv.width, H = cv.height, u = Math.min(W, H) / 400;
+  ctx.save(); ctx.strokeStyle = g; ctx.lineWidth = 2 * u; ctx.setLineDash([8 * u, 8 * u]);
+  ctx.beginPath(); ctx.moveTo(W / 2, H * .18); ctx.lineTo(W / 2, H * .82); ctx.stroke();                  // centre line
+  const ey = H * .42; ctx.beginPath(); ctx.moveTo(W * .2, ey); ctx.lineTo(W * .8, ey); ctx.stroke();       // eye line
+  ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(W / 2 - 14 * u, ey); ctx.lineTo(W / 2 + 14 * u, ey); ctx.moveTo(W / 2, ey - 14 * u); ctx.lineTo(W / 2, ey + 14 * u); ctx.stroke();
+  if (P && pose) {                                                                                       // the eye line as it is now
+    const a = P(468), b = P(473); ctx.strokeStyle = all ? '#c9a46a' : '#e0745f'; ctx.lineWidth = 2.5 * u;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    for (const q of [a, b]) { ctx.beginPath(); ctx.arc(q.x, q.y, 4 * u, 0, 7); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); }
+  }
+  ctx.restore();
+}
+
+/* ---------- measuring ---------- */
+// One sample. Distances are taken along the head's own axes, so a slightly tilted head doesn't shorten them.
+function measure(P, pose, fit, sw, sh, s) {
+  const { ex, ey, n, mm } = pose, R = P(468), L = P(473), mid = mul(add(P(168), P(6)), .5);
+  const D = distanceMm(pose.irisPx / s, sw, sh) || 500;
+  const conv = (D + 13) / D;                     // the eyes converge on a near camera: distance PD is a little wider (rotation centre ~13 mm behind the cornea)
+  const along = (a, b) => Math.abs(dot(sub(b, a), ex)) / mm;
+  const pdNear = along(R, L), pd = pdNear * conv;
+  const monoR = along(mid, R) * conv, monoL = along(mid, L) * conv;
+  // fitting height: pupil to the lowest edge of the lens opening in front of it, for this frame seated on this nose
+  const box = (side) => { if (!fit) return null; const b = F.f.boxes[side]; return { c: fit.map((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), bottom: fit.map((b[0] + b[2]) / 2, b[3]) }; };
+  const bx = fit ? [box('r'), box('l')] : [];
+  const nearest = (p) => bx.slice().sort((x, y) => d2(x.c, p) - d2(y.c, p))[0];
+  const height = (p) => { if (!bx.length) return NaN; const b = nearest(p); return ((b.bottom.x - p.x) * -ey.x + (b.bottom.y - p.y) * -ey.y) / mm; };
+  // estimates from the face's 3D shape: tilt of the brow-to-cheek plane, and how far the cornea sits behind the nose bridge
+  const brow = mul(add(P(105), P(334)), .5), cheek = mul(add(P(117), P(346)), .5);
+  const panto = Math.atan2(dot(sub(brow, cheek), n), dot(sub(brow, cheek), ey)) * 180 / Math.PI;
+  const vertex = dot(sub(P(168), mul(add(R, L), .5)), n) / mm;
+  return { pd, pdNear, monoR, monoL, hR: height(R), hL: height(L), panto, vertex, D, mm, pts: { R, L, mid, bx }, T: fit ? fit.T : null };
+}
+const med = (xs) => { const a = xs.filter(Number.isFinite).sort((x, y) => x - y); return a.length ? a[Math.floor(a.length / 2)] : NaN; };
+let result = null, cal = null;
+function finish() {
+  running = false;
+  const b = burst; burst = null;
+  // keep the steadiest two thirds (closest to the median PD)
+  const m0 = med(b.map((x) => x.pd)), keep = b.slice().sort((x, y) => Math.abs(x.pd - m0) - Math.abs(y.pd - m0)).slice(0, Math.ceil(b.length * .67));
+  const pick = (k) => med(keep.map((x) => x[k]));
+  result = { base: { pd: pick('pd'), pdNear: pick('pdNear'), monoR: pick('monoR'), monoL: pick('monoL'), hR: pick('hR'), hL: pick('hL'), panto: pick('panto'), vertex: pick('vertex'), D: pick('D') },
+    spread: (Math.max(...keep.map((x) => x.pd)) - Math.min(...keep.map((x) => x.pd))) / 2, n: keep.length, last: keep[0], scale: 1 };
+  // the clean camera frame (without guides), as the record
+  still = document.createElement('canvas'); still.width = cv.width; still.height = cv.height;
+  const sctx = still.getContext('2d'), sw = video.videoWidth, sh = video.videoHeight, s = Math.max(cv.width / sw, cv.height / sh);
+  sctx.translate(cv.width, 0); sctx.scale(-1, 1); sctx.drawImage(video, (cv.width - sw * s) / 2, (cv.height - sh * s) / 2, sw * s, sh * s);
+  const shot = $('#shot'); shot.width = cv.width; shot.height = cv.height;
+  stopCam(); $('#s3').hidden = false; $('#s1').hidden = true; $('#s2').hidden = true;
+  if ($('#useCard').checked) startCal(); else drawResult();
+  $('#s3').scrollIntoView({ behavior: 'smooth' });
+}
+function drawResult() {
+  const c = $('#shot'), g = c.getContext('2d'), r = result, k = r.scale, { pts } = r.last, u = Math.max(c.width, c.height) / 700;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(still, 0, 0);
+  if (F && r.last.T) { g.save(); const T = r.last.T; g.setTransform(T.a, T.b, T.c, T.d, T.e, T.f); g.globalAlpha = .85; g.drawImage(F.img, 0, 0); g.restore(); }
+  g.lineWidth = 1.6 * u; g.strokeStyle = '#c9a46a'; g.fillStyle = '#c9a46a';
+  const dotAt = (p) => { g.beginPath(); g.arc(p.x, p.y, 3 * u, 0, 7); g.fill(); };
+  dotAt(pts.R); dotAt(pts.L);
+  g.beginPath(); g.moveTo(pts.mid.x, pts.R.y - 30 * u); g.lineTo(pts.mid.x, pts.R.y + 60 * u); g.stroke();
+  for (const b of pts.bx) { g.beginPath(); g.moveTo(b.bottom.x - 18 * u, b.bottom.y); g.lineTo(b.bottom.x + 18 * u, b.bottom.y); g.stroke(); }
+  g.setLineDash([4 * u, 3 * u]);
+  if (pts.bx.length) for (const p of [pts.R, pts.L]) { const b = pts.bx.slice().sort((x, y) => d2(x.c, p) - d2(y.c, p))[0]; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x, b.bottom.y); g.stroke(); }
+  g.setLineDash([]);
+  const f1 = (v) => (Number.isFinite(v) ? v.toFixed(1) : '–'), fx = r.base;
+  $('#tbl').innerHTML = `
+    <tr><td>Pupillary distance (distance)<small>Both eyes, for distance and everyday lenses</small></td><td>${f1(fx.pd * k)} mm</td></tr>
+    <tr><td>Near PD<small>For reading glasses</small></td><td>${f1(fx.pd * k - 3.2)} mm</td></tr>
+    <tr><td>Right eye (OD)<small>Centre of the nose to the right pupil</small></td><td>${f1(fx.monoR * k)} mm</td></tr>
+    <tr><td>Left eye (OS)<small>Centre of the nose to the left pupil</small></td><td>${f1(fx.monoL * k)} mm</td></tr>
+    ${F ? `<tr><td>Fitting height, right<small>Pupil to the bottom of the lens, in ${esc(F.f.brand + ' ' + F.f.title)}</small></td><td>${f1(fx.hR * k)} mm</td></tr>
+    <tr><td>Fitting height, left</td><td>${f1(fx.hL * k)} mm</td></tr>` : `<tr><td>Fitting heights<small>Marked by our optician on your photo, on the real frame</small></td><td style="font-size:14px">Optician</td></tr>`}
+    <tr><td>Pantoscopic tilt &amp; vertex<small>Set by our optician when the frame is adjusted to you (a camera can only estimate them; your estimate is sent with the photo)</small></td><td style="font-size:14px">Optician</td></tr>`;
+  $('#acc').innerHTML = `Measured ${r.n} times in a row; your readings agreed within ±${f1(r.spread * k)} mm. Scale from ${k !== 1 ? 'your card (typically ±0.5–1 mm)' : 'your iris size (typically ±1–2 mm; the card is more precise)'}. Fitting heights are for this frame resting on your nose. Our optician reviews them, and confirms them in person or on a short video call before progressive lenses are made.`;
+}
+
+/* ---------- card calibration ---------- */
+function startCal() {
+  const c = $('#shot'), { pts, mm } = result.last;
+  cal = { a: pts.mid.x - 42.8 * mm, b: pts.mid.x + 42.8 * mm, y: pts.R.y - 38 * mm, drag: null };
+  $('#calBox').hidden = false; drawCal();
+  const pos = (e) => { const r = c.getBoundingClientRect(); return (e.clientX - r.left) / r.width * c.width; };
+  c.onpointerdown = (e) => { const x = pos(e); cal.drag = Math.abs(x - cal.a) < Math.abs(x - cal.b) ? 'a' : 'b'; cal[cal.drag] = x; drawCal(); c.setPointerCapture(e.pointerId); };
+  c.onpointermove = (e) => { if (cal && cal.drag) { cal[cal.drag] = pos(e); drawCal(); } };
+  c.onpointerup = () => { if (cal) cal.drag = null; };
+}
+function drawCal() {
+  const c = $('#shot'), g = c.getContext('2d'), u = Math.max(c.width, c.height) / 700;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(still, 0, 0);
+  g.strokeStyle = '#c9a46a'; g.fillStyle = '#c9a46a'; g.lineWidth = 2 * u;
+  for (const x of [cal.a, cal.b]) { g.beginPath(); g.moveTo(x, cal.y - 70 * u); g.lineTo(x, cal.y + 30 * u); g.stroke(); g.beginPath(); g.arc(x, cal.y + 40 * u, 9 * u, 0, 7); g.fill(); }
+}
+$('#calDone').addEventListener('click', () => {
+  const px = Math.abs(cal.b - cal.a), D = result.base.D || 500;
+  // the card on the forehead is ~8 mm nearer the camera than the eyes, so it looks slightly bigger there
+  const pxPerMmEyes = px / CARD_MM * (D - 8) / D;
+  const s = result.last.mm / pxPerMmEyes;
+  result.scale = s > .8 && s < 1.25 ? s : 1;
+  if (result.scale === 1) $('#err').textContent = 'That card width did not look right, so we kept the iris scale. You can measure again.';
+  cal = null; $('#calBox').hidden = true; $('#shot').onpointerdown = $('#shot').onpointermove = null; drawResult();
+});
+$('#calSkip').addEventListener('click', () => { cal = null; result.scale = 1; $('#calBox').hidden = true; $('#shot').onpointerdown = $('#shot').onpointermove = null; drawResult(); });
+$('#again').addEventListener('click', () => { $('#s3').hidden = true; $('#s1').hidden = false; $('#s2').hidden = false; $('#err').textContent = ''; $('#start').click(); });
+
+/* ---------- send ---------- */
+$('#send').addEventListener('click', async () => {
+  if (!ref) { $('#err').textContent = 'Open this page from your order confirmation so we can match it to your order.'; return; }
+  const r = result, k = r.scale, b = r.base, one = (v) => Math.round(v * 10) / 10;
+  let photo;
+  if ($('#sendPhoto').checked) { const src = WEAR ? still : $('#shot'), c = document.createElement('canvas'), sc = Math.min(1, (WEAR ? 1500 : 1100) / src.width); c.width = src.width * sc; c.height = src.height * sc; c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); photo = c.toDataURL('image/jpeg', .85); }
+  const body = { ref, pd: one(b.pd * k), pdNear: one(b.pd * k - 3.2), right: one(b.monoR * k), left: one(b.monoL * k), hR: one(b.hR * k), hL: one(b.hL * k),
+    panto: one(Math.max(4, Math.min(15, b.panto))), vertex: one(Math.max(10, Math.min(16, b.vertex + 3))), distance: Math.round(b.D), spread: one(r.spread * k), samples: r.n,
+    scale: k !== 1 ? 'card' : 'iris', frame: WEAR ? 'own frame (worn)' : chosen, method: WEAR ? 'camera-wear' : 'camera-v2', photo };
+  $('#send').disabled = true; $('#err').textContent = '';
+  try {
+    const x = await fetch(API + '/api/measure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!x.ok) throw new Error((await x.json().catch(() => ({}))).error || 'Could not send.');
+    $('#s3').innerHTML = '<h2>Thank you.</h2><p class="fit__lede">Your measurements are with your order. Our optician reviews them before your lenses are made, and will contact you if anything needs a second look.</p><p class="fine">Questions: (905) 881-4123.</p>';
+  } catch (e) { $('#send').disabled = false; $('#err').textContent = e.message + ' Please call (905) 881-4123.'; }
+});
+</script>
+<script src="/shop/age-gate.js"></script>
+</body>
+</html>

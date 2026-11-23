@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product — Leruso Eyewear</title>
+<meta name="theme-color" content="#fbf8f2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230c0b09'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23c9a46a' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="shop.css">
+<link rel="stylesheet" href="limited/limited.css">
+</head>
+<body class="shop-light">
+<header class="shop-nav">
+  <a href="/" class="nav__logo" aria-label="Leruso Eyewear home">LERUSO<span>EYEWEAR</span></a>
+  <nav class="shop-nav__links" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/shop/">Shop</a>
+    <a href="/shop/limited/">Limited</a>
+    <a href="/shop/bag/" data-bag>Bag</a>
+    <a class="btn btn--gold btn--sm" href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book an exam</a>
+  </nav>
+</header>
+
+<main class="shop-wrap">
+  <p class="crumb"><a href="/shop/">Shop</a> <span aria-hidden="true">/</span> <a id="crumbKind" href="/shop/"></a></p>
+  <div id="root"><p class="empty">Loading…</p></div>
+</main>
+
+<footer class="footer">
+  <div class="footer__mark">LERUSO</div>
+  <div class="footer__cols">
+    <div><h4>Boutique</h4><p>7131 Bathurst St, Unit 105<br>Thornhill, ON L4J 7Z1</p><p><a href="tel:+19058814123">(905) 881-4123</a></p></div>
+    <div><h4>Shop</h4><p><a href="/shop/">All products</a><br><a href="/shop/#glasses">Eyeglasses</a><br><a href="/shop/#sunglasses">Sunglasses</a><br><a href="/shop/limited/">Limited Edition</a><br><a href="/shop/contacts/">Reorder contact lenses</a></p></div>
+    <div><h4>Appointments</h4><p>All insurance plans.<br>Direct billing.</p><p><a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book online →</a></p></div>
+  </div>
+  <p class="footer__legal">© <span data-year>2026</span> Leruso Eyewear Inc. · Brand names are trademarks of their respective owners. · <a href="/policies/">Store policies</a> · <a href="/policies/terms/">Terms</a> · <a href="/policies/privacy/">Privacy</a></p>
+</footer>
+
+<script src="common.js"></script>
+<script>
+(async () => {
+  const ORDER_API = 'https://book.lerusoeyewear.com/api/order';
+  const { fmt, esc, sale, codeDiscount, promosReady, brandItems } = Shop;
+  const $ = (s, r = document) => r.querySelector(s);
+  const KIND = { glasses: 'Eyeglasses', sunglasses: 'Sunglasses', contacts: 'Contact lenses' };
+  const qs = new URLSearchParams(location.search), slug = qs.get('p'), brand = qs.get('b');
+  let p, L;
+  try {
+    L = await fetch('lenses.json', { cache: 'no-cache' }).then((r) => r.json());
+    if (brand) p = (await brandItems(brand))[slug];
+    else p = (await fetch('products.json', { cache: 'no-cache' }).then((r) => r.json())).find((x) => x.slug === slug);
+    await promosReady;
+  } catch { $('#root').innerHTML = '<p class="empty">This page could not load. Please call (905) 881-4123.</p>'; return; }
+  if (!p) { $('#root').innerHTML = '<p class="empty">We couldn’t find that piece. <a href="/shop/">Back to the shop →</a></p>'; return; }
+  const lux = !!p.luxury;
+  if (lux) { document.body.classList.remove('shop-light'); document.body.classList.add('lux'); }
+  document.title = `${p.brand} ${p.title} — Leruso Eyewear`;
+  $('#crumbKind').textContent = lux ? 'Limited Edition' : KIND[p.kind]; $('#crumbKind').href = lux ? '/shop/limited/' : '/shop/#' + p.kind;
+
+  // Normalise portal items and the older boutique/contacts items to one shape.
+  const imgs = (p.images || []).map((i) => '../' + i);
+  const vids = p.videos || [];
+  const cols = p.colours || [];
+  const legacySize = p.size && p.size.lens_width ? `${p.size.lens_width}□${p.size.bridge_width || '–'}-${p.size.temple_length || '–'}` : '';
+  const specRows = [['Size', (p.sizes || []).join(' · ').replace(/ - /g, '-') || legacySize], ['Shape', p.shape], ['Rim', p.rim], ['Material', p.material],
+    ['Lenses', p.lens], ['For', p.gender], ['Line', p.line], ['Made in', p.madeIn], ['Released', p.released],
+    ...(p.specs || []).filter(([k]) => !/gender|shape|material|colou?r/i.test(k))].filter(([, v]) => v);
+  // Boutique units (from Parham's stock list): colour, size, lens, edition and this piece's number.
+  const units = p.boutique || [];
+  const colName = (c) => (c ? c.name || [c.frame, c.lens].filter(Boolean).join(' / ') || c.code : '');
+  const unitFor = (i) => units.find((u) => !u.colour || !cols.length || u.colour === colName(cols[i]));
+  const firstUnit = cols.findIndex((c, i) => units.some((u) => u.colour && u.colour === colName(c)));
+  let inStore = p.kind === 'contacts' || p.inStore;
+  const shipText = p.kind === 'contacts' ? 'Ships in 2–5 business days' : (p.ship || 'Special order · ships in 10–14 business days (estimated)');
+
+  const facts = lux ? [
+    p.karats && p.karats.length ? ['Gold', p.karats.map((k) => k + 'k').join(' · ')] : null,
+    p.quantity ? ['Edition', `${Number(p.quantity).toLocaleString('en-CA')} made worldwide`] : null,
+    p.numbered ? ['Numbered', 'Individually numbered'] : null,
+    p.madeIn ? ['Handmade', 'Japan'] : null,
+  ].filter(Boolean) : [];
+
+  $('#root').innerHTML = `<div class="pdp">
+    <section class="gallery">
+      <div class="gallery__main"><img id="mainImg" src="${esc(imgs[0])}" alt="${esc(p.brand + ' ' + p.title)}" title="Tap to enlarge"><video id="mainVid" muted loop playsinline hidden></video>
+        <span class="zoom-hint" aria-hidden="true">⤢</span><div class="g-views"><button class="g3d" id="g3d" type="button" hidden><b>3D</b> Turn it around</button><button class="g3d" id="g360" type="button" hidden><b>360°</b> Turn it around</button></div><a class="g-try" id="gTry" hidden><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="9" cy="10" r=".6" fill="currentColor"/><circle cx="15" cy="10" r=".6" fill="currentColor"/><path d="M9 15c1.6 1.4 4.4 1.4 6 0"/></svg> Try on</a></div>
+      ${imgs.length + vids.length > 1 ? `<div class="thumbs">${imgs.map((im, i) => `<button data-i="${i}" aria-label="Photo ${i + 1}" aria-current="${i === 0}"><img src="${esc(im.replace('.webp', '-t.webp'))}" alt="" loading="lazy" onerror="this.src='${esc(im)}'"></button>`).join('')}${vids.map((v, i) => `<button class="thumb--vid" data-v="${i}" aria-label="Video ${i + 1}" aria-current="false"><img src="../${esc(v.poster)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+    </section>
+    <section class="info">
+      <p class="eyebrow" style="margin:0">${esc(p.brand)}${lux && p.limited ? ' · Limited Edition' : ''}</p>
+      <h1>${esc(p.title)}</h1>
+      ${p.vault ? '<p class="lux-scarcity">From The Vault. One of the last pieces in existence.</p>' : p.scarcity ? `<p class="lux-scarcity">${esc(p.scarcity.replace(/,.*$/, '.'))}</p>` : ''}
+      ${p.subtitle && !lux ? `<p class="sub">${esc(p.subtitle)}</p>` : ''}
+      <div class="price-big" id="price"></div>
+      <p class="ship${inStore ? ' ship--stock' : ''}" id="ship">${esc(shipText)}</p>
+      <p id="tryon"></p><p><button class="btn btn--ghost btn--sm" type="button" id="cmpBtn"></button> <span class="fine" id="cmpMsg"></span></p>
+      ${units.length ? `<div class="boutique-units"><p class="eyebrow" style="margin:0 0 8px">In the boutique now</p>${units.map((u) => `<p>${u.number && u.edition ? `<b>No. ${u.number} of ${u.edition}</b> · ` : u.edition ? `<b>Limited to ${u.edition}</b> · ` : ''}${esc([u.colour && u.colour.replace(/\s*\(.*\)$/, ''), u.lens, u.size && 'size ' + u.size].filter(Boolean).join(' · ') || 'Available to see in person')}</p>`).join('')}</div>` : ''}
+      ${p.brand === 'Leisure Society' ? `<p class="lux-warranty"><b>Lifetime warranty</b> on every Leisure Society frame.</p>` : ''}
+      ${cols.length > 1 ? `<p class="eyebrow" style="margin:22px 0 0">Colour</p><div class="swatches">${cols.map((c, i) => `<button class="swatch${c.img ? ' swatch--img' : ''}" data-c="${i}" aria-pressed="${i === Math.max(0, firstUnit)}">${c.img ? `<img src="../${esc(c.img.replace('.webp', '-t.webp'))}" alt="" loading="lazy">` : ''}<span>${esc(c.name || [c.frame, c.lens].filter(Boolean).join(' / ') || c.code)}</span>${unitFor(i) && units.some((u) => u.colour) ? ' <span class="instore-dot" title="In the boutique">●</span>' : ''}</button>`).join('')}</div>` : ''}
+      ${p.asianFit ? `<p class="eyebrow" style="margin:18px 0 0">Fit</p><div class="swatches"><button class="swatch fitbtn" data-fit="Regular fit" aria-pressed="true">Regular fit</button><button class="swatch fitbtn" data-fit="Asian fit" aria-pressed="false">Asian fit</button></div><p class="fine" style="margin-top:4px">This frame also comes in an Asian fit, with a lower bridge and adjusted nose pads for a better sit.</p>` : ''}
+      ${facts.length ? `<dl class="lux-facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
+      ${p.story ? `<p class="lux-story">${esc(p.story)}</p>` : ''}
+      ${specRows.length ? `<dl class="specs">${specRows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : ''}
+      ${p.about && !p.story ? `<p class="fine" style="font-size:14px">${esc(p.about)}</p>` : ''}
+      <div id="config"></div>
+      <div class="panel" id="buy"></div>
+    </section></div>`;
+
+  // Gallery: photos and short videos. Videos play silently on loop in the main frame.
+  const showPhoto = (src) => { close3d(); closeSpin(); const v = $('#mainVid'); v.pause(); v.hidden = true; $('#mainImg').hidden = false; $('#mainImg').src = src; };
+  // 3D: the maison's own model (Kering publishes one per colour), shown in the gallery and turned with a finger or mouse
+  const sfFor = () => (cols[state.colour] && cols[state.colour].sf) || p.sf || '';
+  function update3d() { const b = $('#g3d'); if (b) b.hidden = !sfFor(); const s = $('#g360'); if (s) s.hidden = !!sfFor() || spinFor().length < 6; }
+  // 360°: the maison's own photos of this colour taken all the way round; drag (or swipe) to turn it
+  const SPIN_HOST = { T: 'https://thelios.bynder.com/transform/', L: 'https://myluxottica-im2.luxottica.com/prod-onecp-record-files/pieyewear/' };
+  const spinFor = () => ((cols[state.colour] && cols[state.colour].spin) || p.spin || []).map((u) => (/^[TL]:/.test(u) ? SPIN_HOST[u[0]] + u.slice(2) : u));
+  function closeSpin() { const v = document.querySelector('.gallery__main .spin'); if (v) v.remove(); const b = $('#g360'); if (b) b.innerHTML = '<b>360°</b> Turn it around'; }
+  function openSpin() {
+    const urls = spinFor(); if (urls.length < 6) return;
+    const main = document.querySelector('.gallery__main'); close3d(); closeSpin();
+    const v = $('#mainVid'); v.pause(); v.hidden = true; $('#mainImg').hidden = true;
+    const box = document.createElement('div'); box.className = 'spin'; box.innerHTML = '<img alt="" draggable="false"><span class="spin__hint">Drag to turn</span><span class="spin__load"></span>';
+    main.append(box); $('#g360').innerHTML = 'Photos';
+    const img = box.querySelector('img'), load = box.querySelector('.spin__load');
+    const frames = urls.map((u) => { const i = new Image(); i.decoding = 'async'; i.src = u; return i; });
+    let i = 0, ready = 0;
+    const show = (k) => { i = ((k % urls.length) + urls.length) % urls.length; img.src = frames[i].src; };
+    frames.forEach((f) => { const done = () => { ready++; load.style.width = (ready / urls.length) * 100 + '%'; if (ready === urls.length) { load.remove(); spinOnce(); } }; f.complete ? done() : (f.onload = f.onerror = done); });
+    show(0);
+    function spinOnce() { let n = 0; const t = setInterval(() => { show(i + 1); if (++n >= urls.length || !box.isConnected) clearInterval(t); }, 110); }
+    let x0 = null, i0 = 0, step = 14;
+    box.addEventListener('pointerdown', (e) => { step = Math.max(14, box.clientWidth / (urls.length * 1.6)); x0 = e.clientX; i0 = i; box.setPointerCapture(e.pointerId); box.classList.add('is-drag'); });
+    box.addEventListener('pointermove', (e) => { if (x0 == null) return; show(i0 - Math.round((e.clientX - x0) / step)); });
+    box.addEventListener('pointerup', () => { x0 = null; box.classList.remove('is-drag'); });
+  }
+  document.addEventListener('click', (e) => { if (!e.target.closest('#g360')) return; if (document.querySelector('.gallery__main .spin')) { closeSpin(); $('#mainImg').hidden = false; } else openSpin(); });
+  function close3d() { const f = document.querySelector('.gallery__main iframe'); if (f) f.remove(); const b = $('#g3d'); if (b) b.innerHTML = '<b>3D</b> Turn it around'; }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#g3d')) return;
+    const main = document.querySelector('.gallery__main'), open = main.querySelector('iframe');
+    if (open) { close3d(); $('#mainImg').hidden = false; return; }
+    const v = $('#mainVid'); v.pause(); v.hidden = true; $('#mainImg').hidden = true;
+    const f = document.createElement('iframe'); f.title = p.brand + ' ' + p.title + ' in 3D'; f.allow = 'autoplay; fullscreen; xr-spatial-tracking'; f.setAttribute('allowfullscreen', '');
+    f.src = `https://sketchfab.com/models/${encodeURIComponent(sfFor())}/embed?autostart=1&preload=1&ui_infos=0&ui_hint=2&ui_theme=dark&ui_watermark=0&dnt=1`;
+    main.append(f); $('#g3d').innerHTML = 'Photos';
+  });
+  document.querySelectorAll('.thumbs button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.v !== undefined) {
+      const v = $('#mainVid'), it = vids[+b.dataset.v]; $('#mainImg').hidden = true; v.hidden = false; v.poster = '../' + it.poster; v.src = '../' + it.src; v.play().catch(() => {});
+    } else showPhoto(imgs[+b.dataset.i]);
+    document.querySelectorAll('.thumbs button').forEach((x) => x.setAttribute('aria-current', x === b));
+  }));
+  // Full screen viewer: every photo and video of the frame, swipe or use the arrows to move through them;
+  // tap a photo to zoom into the detail. Videos play full screen with their controls.
+  function openViewer(start) {
+    const items = imgs.map((src) => ({ src })).concat(vids.map((v) => ({ vid: '../' + v.src, poster: '../' + v.poster })));
+    const cur = $('#mainImg').hidden ? null : $('#mainImg').getAttribute('src');
+    if (cur && !items.some((x) => x.src === cur)) items.unshift({ src: cur });           // a colour photo shown in the gallery
+    let i = Math.max(0, Math.min(items.length - 1, start ?? (cur ? items.findIndex((x) => x.src === cur) : 0)));
+    const box = document.createElement('div'); box.className = 'lightbox'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Photos and videos');
+    box.innerHTML = `<button class="lightbox__x" aria-label="Close">✕</button>
+      ${items.length > 1 ? '<button class="lightbox__nav lightbox__nav--prev" aria-label="Previous">‹</button><button class="lightbox__nav lightbox__nav--next" aria-label="Next">›</button>' : ''}
+      <div class="lightbox__stage"></div><p class="lightbox__tip"></p>`;
+    document.body.append(box); document.body.style.overflow = 'hidden';
+    const stage = box.querySelector('.lightbox__stage'), tip = box.querySelector('.lightbox__tip');
+    const pan = (el, x, y) => { const r = stage.getBoundingClientRect(); el.style.transformOrigin = `${((x - r.left) / r.width) * 100}% ${((y - r.top) / r.height) * 100}%`; };
+    function show() {
+      const it = items[i];
+      stage.innerHTML = it.vid ? `<video src="${esc(it.vid)}" poster="${esc(it.poster)}" controls autoplay muted loop playsinline></video>` : `<img src="${esc(it.src)}" alt="">`;
+      tip.textContent = (items.length > 1 ? `${i + 1} / ${items.length} · ` : '') + (it.vid ? 'Swipe for more · Esc to close' : 'Tap to zoom · swipe for more · Esc to close');
+      const img = stage.querySelector('img');
+      if (img) img.addEventListener('click', (e) => { e.stopPropagation(); img.classList.toggle('is-zoomed'); pan(img, e.clientX, e.clientY); });
+    }
+    const go = (d) => { i = (i + d + items.length) % items.length; show(); };
+    const close = () => { box.remove(); document.body.style.overflow = ''; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'ArrowLeft') go(-1); };
+    document.addEventListener('keydown', onKey);
+    box.querySelector('.lightbox__x').addEventListener('click', close);
+    box.querySelectorAll('.lightbox__nav').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); go(b.classList.contains('lightbox__nav--next') ? 1 : -1); }));
+    stage.addEventListener('mousemove', (e) => { const img = stage.querySelector('img.is-zoomed'); if (img) pan(img, e.clientX, e.clientY); });
+    let sx = null, sy = null;
+    stage.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; } }, { passive: true });
+    stage.addEventListener('touchmove', (e) => { const img = stage.querySelector('img.is-zoomed'); if (img && e.touches.length === 1) { e.preventDefault(); pan(img, e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
+    stage.addEventListener('touchend', (e) => {
+      if (sx == null || stage.querySelector('img.is-zoomed')) { sx = null; return; }
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) go(dx < 0 ? 1 : -1);
+    });
+    stage.addEventListener('click', (e) => { if (e.target === stage) close(); });
+    show();
+  }
+  $('#mainImg').addEventListener('click', () => openViewer());
+  $('#mainVid').addEventListener('click', () => { const v = $('#mainVid'), k = vids.findIndex((x) => v.src.endsWith(x.src)); v.pause(); openViewer(imgs.length + Math.max(0, k)); });
+  document.querySelector('.zoom-hint').addEventListener('click', () => ($('#mainVid').hidden ? openViewer() : $('#mainVid').click()));
+
+  /* ---------- state ---------- */
+  const state = { lensOn: false, pick: {}, choices: {}, variant: 0, boxes: 2, colour: Math.max(0, firstUnit), code: '' };
+  const basePrice = () => (cols[state.colour] && cols[state.colour].price) || p.price;
+  const framePrice = () => { const s = sale({ ...p, price: basePrice() }); return s ? s.price : basePrice(); };
+  // Each finish can have its own photo (Leisure Society). Show it when that colour is picked.
+  function showColourImage() {
+    const c = cols[state.colour]; update3d();
+    if (document.querySelector('.gallery__main iframe')) { close3d(); if (sfFor()) { $('#g3d').click(); return; } $('#mainImg').hidden = false; }
+    if (document.querySelector('.gallery__main .spin')) { closeSpin(); if (spinFor().length >= 6) { openSpin(); return; } $('#mainImg').hidden = false; }
+    if (!c || !c.img) return;
+    showPhoto('../' + c.img);
+    document.querySelectorAll('.thumbs button').forEach((x) => x.setAttribute('aria-current', 'false'));
+  }
+  function renderShip() {
+    if (!units.length || p.kind === 'contacts') return;
+    inStore = !!unitFor(state.colour);
+    $('#ship').className = 'ship' + (inStore ? ' ship--stock' : '');
+    $('#ship').textContent = inStore ? 'In the boutique · ships in 1–2 days' : 'This finish is a special order · ships in 10–14 business days (estimated)';
+  }
+  function renderPrice() { renderShip();
+    const s = sale({ ...p, price: basePrice() });
+    $('#price').innerHTML = p.kind === 'contacts' ? fmt(p.price) : !basePrice() ? 'Price on enquiry' : s ? `<s class="was">${fmt(s.was)}</s> ${fmt(s.price)}` : fmt(basePrice());
+  }
+  document.querySelectorAll('.fitbtn').forEach((b) => b.addEventListener('click', () => {
+    state.fit = b.dataset.fit; document.querySelectorAll('.fitbtn').forEach((x) => x.setAttribute('aria-pressed', x === b)); renderBuy();
+  }));
+  document.querySelectorAll('.swatch:not(.fitbtn)').forEach((b) => b.addEventListener('click', () => {
+    state.colour = +b.dataset.c; document.querySelectorAll('.swatch:not(.fitbtn)').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    showColourImage();
+    renderPrice(); renderBuy();
+  }));
+
+  // A step shows only when every showIf condition matches an earlier pick (e.g. progressive designs only for "Progressive").
+  // Colour guide for tint / Transitions swatches (approximate; real tints vary with lens and light).
+  const TINTS = { grey: '#212624', brown: '#2f200f', 'grey-green': '#4b5a49', 'graphite green': '#24321d', copper: '#9a5a32', ruby: '#681434',
+    sapphire: '#143757', amethyst: '#5d3568', emerald: '#093d2c', amber: '#573b0c', 'blue-purple': '#4b4a8e', 'blue-sky': '#4f7fae', violet: '#6b4f8f' };
+  const tintCSS = (name, gradient) => { const n = name.toLowerCase(); const k = n.replace(/^(gen s|xtractive polarized|xtractive|color touch)\s+/, '').replace(/\s*·.*$/, ''); const c = TINTS[k];
+    gradient = gradient || / · gradient$/.test(n);
+    if (!c) return ''; return gradient ? `linear-gradient(180deg, ${c} 0%, ${c}cc 45%, ${c}22 100%)` : c; };
+  const match = (cond) => Object.entries(cond).every(([k, ids]) => ids.includes(state.pick[k]));
+  const visible = (s) => (!s.showIf || match(s.showIf)) && !(s.hideIf && match(s.hideIf));
+  const stepsFor = () => L.steps.filter(visible);
+  const optsOf = (s) => { const all = s.options.filter((o) => !o.onlyIf || match(o.onlyIf)), ok = all.filter((o) => avail(s, o));
+    return ok.length ? ok : all; };   // nothing in range → show all; the optician confirms by phone
+  /* Essilor 2026 price list (uncut): power range per material and design, [max plus, max minus] on the strongest meridian.
+     1.74 isn't made in Freedom or DS One; 1.74 single vision has no Transitions; Transitions in 1.74 only GEN S on XR / Physio / Comfort Max. */
+  const RANGE = {
+    sv:      { '150': [10.25, -10.25], air: [8, -12], '160': [8, -13], '167': [10, -17], '174': [10, -18] },
+    xr:      { '150': [6, -10], air: [6, -10], '160': [8, -12], '167': [9, -12], '174': [13, -14] },
+    physio:  { '150': [6, -10], air: [6, -10], '160': [8, -12], '167': [9, -14], '174': [9, -16] },
+    freedom: { '150': [7, -10], air: [6, -10], '160': [8, -12], '167': [9, -14] },
+    comfortmax: { '150': [7, -10], air: [6, -10], '160': [8, -12], '167': [9, -14], '174': [13, -18] },
+    dsone:   { '150': [6, -10], air: [8, -10], '160': [8, -12], '167': [9, -12] },
+  };
+  const rxExtremes = () => { const r = state.rx || {}, v = [];
+    for (const e of ['od', 'os']) { const sp = parseFloat((r[e + 'Sph'] || '').replace('−', '-')), c = parseFloat((r[e + 'Cyl'] || '0').replace('−', '-')) || 0; if (!isNaN(sp)) v.push(sp, sp + c); }
+    return v.length ? [Math.max(...v), Math.min(...v)] : null; };
+  function indexOK(id) {
+    const key = state.pick.rx === 'prog' ? state.pick.design : 'sv', rg = (RANGE[key] || RANGE.sv)[id];
+    if (!rg) return false;
+    if (id === '174' && state.pick.rx !== 'prog' && state.pick.design === 'sunpolar') return false;   // no polarized in 1.74
+    if (state.pick.rx !== 'prog' && !svSunOK(id)) return false;          // e.g. no tint on Airwear, no polarized in 1.74
+    const x = rxExtremes(); return !x || (x[0] <= rg[0] && x[1] >= rg[1]);
+  }
+  /* Essilor 2026 list, per material × design: gs = Transitions GEN S colours, xa = XTRActive colours, xp = XTRActive Polarized (Grey),
+     tint = sun tint possible (Sun coatings offered; Airwear is never tintable), pol = Xperio polarized colours. sv = aspheric ∪ spherical rows.
+     ct = Transitions Color Touch, mir = XTRActive Style Mirrors: Transitions availability chart, April 2026 (~/Downloads/Transitions  and Color Touch Availability Chart 2026.pdf). */
+  const G8 = 'G B GG S AM E A R';
+  const AV = {
+    '150': { xr: { gs: 'G B GG', xa: 'G B GG', tint: 1, pol: 'G B' }, physio: { gs: G8, xa: 'G B GG', tint: 1, pol: 'G B GG', ct: 1 }, comfortmax: { gs: G8, xa: 'G B GG', tint: 1, pol: 'G B GG', ct: 1 },
+             freedom: { gs: G8, xa: 'G B GG', xp: 1, tint: 1, pol: 'G B GG' }, dsone: { gs: 'G B GG', xa: 'G B GG' }, sv: { gs: G8, xa: 'G B GG', xp: 1, tint: 1, pol: 'G B GG C R', ct: 1 } },
+    air:   { xr: { gs: G8, xa: 'G B', pol: 'G B' }, physio: { gs: G8, xa: 'G B GG', pol: 'G B GG' }, comfortmax: { gs: G8, xa: 'G B GG', pol: 'G B GG', mir: 1 },
+             freedom: { gs: G8, xa: 'G B GG', xp: 1, pol: 'G B GG C R' }, dsone: { gs: 'G B GG', xa: 'G B GG', pol: 'G B' }, sv: { gs: G8, xa: 'G B GG', xp: 1, pol: 'G B GG C R', mir: 1 } },
+    '160': { xr: { gs: 'G B GG', xa: 'G B GG', tint: 1 }, physio: { gs: 'G B GG', xa: 'G B GG', tint: 1, pol: 'G B GG' }, comfortmax: { gs: 'G B GG', xa: 'G B GG', tint: 1, pol: 'G B GG' },
+             freedom: { gs: 'G B GG', xa: 'G B GG', tint: 1, pol: 'G B GG' }, dsone: { gs: 'G B GG', xa: 'G B GG' }, sv: { gs: 'G B GG', xa: 'G B GG', tint: 1, pol: 'G B GG' } },
+    '167': { xr: { gs: G8, xa: 'G B GG', ct: 1 }, physio: { gs: G8, xa: 'G B GG', tint: 1, pol: 'G B GG', ct: 1 }, comfortmax: { gs: G8, xa: 'G B GG', tint: 1, pol: 'G B GG', ct: 1 },
+             freedom: { gs: G8, xa: 'G B GG', xp: 1, tint: 1, pol: 'G B GG' }, dsone: { gs: 'G B GG', xa: 'G B GG', pol: 'G B' }, sv: { gs: G8, xa: 'G B GG', xp: 1, tint: 1, pol: 'G B GG', ct: 1 } },
+    '174': { xr: { gs: 'G B' }, physio: { gs: 'G B' }, comfortmax: { gs: 'G B' }, sv: {} },
+  };
+  const COL = { grey: 'G', brown: 'B', 'graphite green': 'GG', 'grey-green': 'GG', sapphire: 'S', amethyst: 'AM', emerald: 'E', amber: 'A', ruby: 'R', copper: 'C' };
+  const avOf = (idx) => ((AV[idx || state.pick.index || '150'] || {})[state.pick.rx === 'prog' ? state.pick.design : 'sv']) || {};
+  const has = (list, code) => (' ' + (list || '') + ' ').includes(' ' + code + ' ');
+  function lightOK(id, a) {
+    if (id === 'transitions') return !!(a.gs || a.xa);
+    if (id === 'transxpol') return !!a.xp;
+    if (id === 'trans360') { const x = rxExtremes(); return state.pick.rx !== 'prog' && state.pick.index === '174' && (!x || (x[0] <= 10 && x[1] >= -14)); }   // Essilor SV 360° 1.74: Transitions G/B, +10 to −14
+    if (id === 'transtouch') return !!a.ct;          // Color Touch: XR 1.67; Physio / Comfort Max / SV spherical in 1.5 + 1.67; Crizal Rock only
+    if (id === 'transmirror') return !!a.mir;        // Style Mirrors: Comfort Max + SV spherical, Airwear only
+    if (id === 'psolid' || id === 'pgrad') return !!a.tint;
+    if (id === 'ppolar') return !!a.pol;
+    return id === 'clear';
+  }
+  function svSunOK(idx) { const a = avOf(idx), d = state.pick.design;   // SV sun lenses are picked before the material
+    return d === 'sunsolid' || d === 'sungrad' ? !!a.tint : d === 'sunpolar' ? !!a.pol : true; }
+  // Colours Essilor makes for this lens + material ("Match my sample" = tints only)
+  function choicesOf(s, o) {
+    const a = avOf();
+    return o.choices.filter((ch) => { const n = ch.toLowerCase(); if (n === 'match my sample') return !/polar/.test(o.id);
+      const c = COL[n.replace(/^(gen s|xtractive polarized|xtractive|color touch)\s+/, '').replace(/\s*·.*$/, '')];
+      if (o.id === 'transtouch' || o.id === 'transmirror') return true;
+      if (o.id === 'trans360') return c === 'G' || c === 'B';
+      if (o.id === 'transitions') return /^gen s/.test(n) ? has(a.gs, c) : has(a.xa, c);
+      if (o.id === 'transxpol') return !!a.xp && c === 'G';
+      if (/polar/.test(o.id)) return has(a.pol, c);
+      return true; });
+  }
+  function avail(s, o) {
+    if (s.id === 'index') return indexOK(o.id);
+    if (s.id === 'light') return lightOK(o.id, avOf());
+    if (s.id === 'coat' && state.pick.light === 'transtouch' && s.options.some((x) => x.id === 'rock')) return o.id === 'rock';
+    return true;
+  }
+  const optOf = (sid) => { const s = stepsFor().find((x) => x.id === sid); return s && optsOf(s).find((o) => o.id === state.pick[sid]); };
+  // Fill defaults until nothing changes: picking "Single vision" reveals its lens step, which needs a default too.
+  const settle = () => { for (let changed = true, n = 0; changed && n < 10; n++) { changed = false;
+    for (const s of stepsFor()) if (!optsOf(s).some((o) => o.id === state.pick[s.id])) { state.pick[s.id] = optsOf(s)[0].id; changed = true; } } };
+  /* Parham's offer, frames ≥ C$350, single vision, clear, and ONLY if the Rx fits a stock lens in that material:
+     Essential / Anti-reflective lens 100% off; Blue-light C$75 instead of full price. Material upcharge (Airwear +50, 1.6 +100, 1.67 +150)
+     is still paid. No offer on 1.74. Stock = Essilor 2026 price list p.22 (Trio EC, OSA Lite / Value Plus HC & HMC, Blue UV Capture):
+     [max plus, max minus sphere, max minus cyl, max combined, diameter mm]. */
+  const STOCK = {
+    clear: { '150': [6, -6, -3, -6, 70], air: [4, -6, -4, -10, 70], '160': [2, -8, -2, -10, 75], '167': [6, -10, -2, -12, 75] },
+    blue:  { '150': [4, -4, -2, -4, 70], air: [4, -8, -2, -8, 70], '167': [4, -8, -2, -8, 80] },
+  };
+  const BLUE_STOCK_PRICE = 75;
+  function stockOffer() {
+    if (p.kind === 'contacts' || !state.lensOn || state.pick.rx !== 'sv' || framePrice() < 350) return null;
+    const o = optOf('design'); if (!o || !['hc', 'trio', 'blue'].includes(o.id)) return null;
+    if ((state.pick.light || 'clear') !== 'clear') return null;
+    const idx = state.pick.index || '150', rg = STOCK[o.id === 'blue' ? 'blue' : 'clear'][idx];
+    if (!rg) return { ok: false, why: idx === '174' ? 'Not offered on 1.74 lenses' : 'No stock lens in this material for this lens type' };
+    const r = state.rx || {}, num = (v) => parseFloat(String(v || '').replace('−', '-'));
+    if (state.rxWay !== 'enter' || !(r.odSph || r.osSph)) return { ok: false, why: 'Enter your prescription to check' };
+    const [hi, lo, cyl, comb, dia] = rg, txt = `${hi > 0 ? '+' + hi.toFixed(2) : 'plano'} to −${Math.abs(lo).toFixed(2)}, cylinder up to −${Math.abs(cyl).toFixed(2)}`;
+    for (const e of ['od', 'os']) { if (!r[e + 'Sph']) continue; const sp = num(r[e + 'Sph']), c = num(r[e + 'Cyl']) || 0;
+      if (sp > hi || sp < lo || c < cyl || c > 0 || sp + c < comb) return { ok: false, why: `Your prescription is outside the stock range for this lens (${txt})` }; }
+    const g = frameGeo(); if (2 * g.r + 2 > dia) return { ok: false, why: 'This frame needs a larger lens than our stock lenses' };
+    const amount = o.id === 'blue' ? Math.max(0, o.price - BLUE_STOCK_PRICE) : o.price;
+    return { ok: true, amount, name: o.name, label: o.id === 'blue' ? `${o.name} lenses ${fmt(BLUE_STOCK_PRICE)} instead of ${fmt(o.price)}` : `${o.name} lenses 100% off` };
+  }
+  function subtotal() {
+    if (p.kind === 'contacts') return (p.variants[state.variant] || p.variants[0]).price * state.boxes;
+    let t = framePrice(); if (state.lensOn) for (const s of stepsFor()) { const o = optOf(s.id); if (o) t += o.price; }
+    const so = stockOffer(); if (so && so.ok) t -= so.amount;
+    return t;
+  }
+  const discount = () => (state.code ? codeDiscount(state.code, p, p.kind === 'contacts' ? subtotal() : framePrice()) : null);
+  const items = () => +(subtotal() - ((discount() || {}).amount || 0)).toFixed(2);
+  // HST (Parham): non-prescription frames/sunglasses and colour contacts with zero power pay 13%; prescription eyewear doesn't.
+  const taxable = () => (p.kind === 'contacts' ? !!state.plano : !state.lensOn);
+  function summary() {
+    const fit = p.asianFit && state.fit === 'Asian fit' ? 'Asian fit · ' : '';
+    const colour = fit + (cols.length > 1 ? (cols[state.colour].name || [cols[state.colour].frame, cols[state.colour].lens].filter(Boolean).join(' / ') || cols[state.colour].code) + ' · ' : '');
+    if (p.kind === 'contacts') { const v = p.variants[state.variant] || p.variants[0]; return `${v.option} × ${state.boxes} box${state.boxes > 1 ? 'es' : ''}`; }
+    if (!state.lensOn) return colour + 'Frame only';
+    return colour + stepsFor().map((s) => { const o = optOf(s.id); return o ? `${s.title}: ${o.name}${o.choices && state.choices[s.id] ? ' (' + state.choices[s.id] + ')' : ''}` : null; }).filter(Boolean).join(' · ');
+  }
+  function renderConfig() {
+    const c = $('#config');
+    if (p.kind === 'contacts') {
+      c.innerHTML = `<div class="panel"><h2>Choose your pack</h2><div class="opts">${p.variants.map((v, i) => `<button class="opt" data-v="${i}" aria-pressed="${state.variant === i}"><b>${esc(v.option)}<span>${fmt(v.price)}</span></b></button>`).join('')}</div>
+        <label class="form" style="gap:6px">Boxes (total for both eyes)<select id="boxes">${[1, 2, 3, 4, 6, 8, 12, 24].map((n) => `<option ${n === state.boxes ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        ${(() => { const v = p.variants[state.variant] || p.variants[0]; if (!v.rebates) return '';
+          return `<div class="rebate"><p class="eyebrow" style="margin:0 0 8px">Buy more, save more</p>
+            ${v.rebates.map((r) => `<button class="rebate__tier" data-n="${r.boxes}" aria-pressed="${state.boxes === r.boxes}"><span>Buy ${r.boxes} boxes · ${fmt(r.rebate)} back</span><b>${fmt(r.per_box_after)}<small>/box after rebate</small></b></button>`).join('')}
+            <p class="rebate__note">Prices after rebate are a suggestion. The rebate is paid directly by ${esc(p.rebateProgram || 'the manufacturer')} 4–6 weeks after purchase, as a prepaid card or cheque. You file the rebate yourself after purchase.</p></div>`; })()}
+        <p class="fine">A valid contact lens prescription is required. We’ll confirm it with you before ordering.</p></div>`;
+      c.querySelectorAll('.rebate__tier').forEach((b) => b.addEventListener('click', () => { state.boxes = +b.dataset.n; renderConfig(); renderBuy(); }));
+      c.querySelectorAll('[data-v]').forEach((b) => b.addEventListener('click', () => { state.variant = +b.dataset.v; renderConfig(); renderBuy(); }));
+      $('#boxes').addEventListener('change', (e) => { state.boxes = +e.target.value; renderBuy(); });
+      return;
+    }
+    const noRx = /^no/i.test(p.rx || '') || (p.specs || []).some(([k, v]) => /rx/i.test(k) && /^no/i.test(v)) || /not suitable for prescription/i.test(p.about || '') || p.smart;
+    if (noRx) { c.innerHTML = `<div class="panel"><h2>Lenses</h2><p class="fine" style="font-size:14px">${p.smart ? 'Prescription lenses for smart glasses are ordered through the boutique. Call us and we’ll take care of it.' : 'This frame comes with its original lenses and isn’t suitable for prescription lenses. Ask us for a similar style that is.'}</p></div>`; return; }
+    const steps = stepsFor();
+    c.innerHTML = `<div class="panel"><h2>Lenses</h2><div class="opts">
+        <button class="opt" data-on="0" aria-pressed="${!state.lensOn}"><b>Frame only<span>Included</span></b><small>${p.kind === 'sunglasses' ? 'With the original sun lenses' : 'With display lenses'}</small></button>
+        <button class="opt" data-on="1" aria-pressed="${state.lensOn}"><b>Add prescription lenses</b><small>Made and fitted by a licensed optician</small></button></div>
+      ${state.lensOn ? steps.map((s) => `<div><p class="eyebrow" style="margin:6px 0 10px">${esc(s.title)}</p><div class="opts">${optsOf(s).map((o) => `<button class="opt" data-s="${s.id}" data-o="${o.id}" aria-pressed="${state.pick[s.id] === o.id}"><b>${esc(o.name)}<span>${o.price ? (o.from ? 'from ' : '+') + fmt(o.price) : 'Included'}</span></b><small>${esc(o.desc)}</small></button>`).join('')}</div>
+        ${s.id === 'light' && /^trans/.test(state.pick.light || '') ? `<p class="fine" style="margin:8px 0 0"><a href="/shop/try-on/?mode=transitions&line=${({ transtouch: 'touch', transxpol: 'xpol' })[state.pick.light] || 'gens'}${p.slug ? '&p=' + encodeURIComponent(p.slug) : ''}" style="color:var(--gold-2)">See Transitions darken on your face →</a></p>` : ''}
+        ${s.id === 'index' ? '<div id="thick" class="thick"></div>' : ''}
+        ${s.id === 'coat' ? (() => { const cz = optsOf(s).find((o) => o.id === 'easy' || o.id === 'crizalsun'); return cz && !/^(easy|rock|prevencia|sapphire|crizalsun)$/.test(state.pick.coat || '') ? `<div class="thick__tip" style="margin-top:8px"><b>Our suggestion: ${esc(cz.name)}</b><small>Fewer reflections, smoother and easier to clean, and your lenses look nicer on you (people see your eyes, not glare).</small><button class="tab" data-s="coat" data-o="${cz.id}">Choose it · +${fmt(cz.price)}</button></div>` : ''; })() : ''}
+        ${s.id === 'design' && state.pick.rx === 'prog' ? progDemo() : ''}
+        ${(() => { const o = optsOf(s).find((x) => x.id === state.pick[s.id]); if (o && o.choices && state.choices[s.id] && !choicesOf(s, o).includes(state.choices[s.id])) delete state.choices[s.id];
+          return o && o.choices ? `<div class="choice-row" style="margin-top:8px">${choicesOf(s, o).map((ch) => { const bg = tintCSS(ch, /grad/.test(o.id)); return `<button class="tab tintbtn" data-st="${s.id}" data-ch="${esc(ch)}" aria-pressed="${state.choices[s.id] === ch}">${bg ? `<span class="tint" style="background:${bg}"></span>` : ''}${esc(ch)}</button>`; }).join('')}</div>
+          ${state.choices[s.id] === 'Match my sample' ? '<p class="fine">Bring your sunglasses or a sample to the boutique, or mail it to us. Essilor matches the tint as closely as possible.</p>' : '<p class="fine">Colour guide only. Real tints vary with lens material and light.</p>'}` : ''; })()}</div>`).join('') + `<p class="fine">${esc(L.note)}</p>` : ''}</div>`;
+    c.querySelectorAll('[data-on]').forEach((b) => b.addEventListener('click', () => { state.lensOn = b.dataset.on === '1'; if (state.lensOn) settle(); renderConfig(); renderBuy(); }));
+    c.querySelectorAll('[data-s]').forEach((b) => b.addEventListener('click', () => { if (b.dataset.s === 'index') state.indexTouched = true; delete state.choices[b.dataset.s]; state.pick[b.dataset.s] = b.dataset.o; settle(); renderConfig(); renderBuy(); }));
+    c.querySelectorAll('[data-ch]').forEach((b) => b.addEventListener('click', () => { state.choices[b.dataset.st] = b.dataset.ch; renderConfig(); renderBuy(); }));
+    if (state.lensOn) { renderRx(c); renderThick(); wireProgDemo(); }   // order: add lenses → prescription → SV/progressive → lens choices
+  }
+
+  /* ---------- Thinner lenses: how thick the lens gets at the customer's power, and our suggestion ----------
+     shortcut: thin-lens sag estimate (±0.5 mm), not a lab calculation; the optician confirms the real lens. */
+  // Essilor's own chart (65 mm lens): [index, min centre on minus, edge minus centre at −6.00, centre minus 1 mm edge at +4.00].
+  // −6.00 edge/centre: 1.5 9.0/2.0 · Airwear 7.1/1.3 · 1.6 6.7/1.2 · 1.67 6.1/1.1 · 1.74 5.2/1.1; +4.00 centre: 5.4 · 5.0 · 4.7 · 4.1 · 2.7
+  const IDX = { '150': [1.5, 2.0, 7.0, 4.4], air: [1.59, 1.3, 5.8, 4.0], '160': [1.6, 1.2, 5.5, 3.7], '167': [1.67, 1.1, 5.0, 3.1], '174': [1.74, 1.1, 4.1, 1.7] };
+  const rxPower = () => { const r = state.rx || {}, v = [];
+    for (const e of ['od', 'os']) { const s = parseFloat((r[e + 'Sph'] || '').replace('−', '-')), c = parseFloat((r[e + 'Cyl'] || '0').replace('−', '-')) || 0;
+      if (!isNaN(s)) v.push(s, s + c); }
+    return v.length ? v.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a)) : null; };
+  // Frame geometry: lens width A, bridge DBL (from "53-17-140"), shape → effective diameter; the patient's PD sets decentration.
+  const SHAPE_ED = { round: 1.02, oval: 1.06, lector: 1.08, geometric: 1.1, 'cat eye': 1.12, rectangular: 1.12, square: 1.12, pilot: 1.15, aviator: 1.15, 'round aviator': 1.12, butterfly: 1.15, mask: 1.2, shield: 1.2 };
+  function frameGeo() {
+    const sz = String((p.sizes || [])[0] || (p.size && [p.size.lens_width, p.size.bridge_width].join('-')) || ''), m = sz.match(/(\d{2})\D+(\d{2})/);
+    const A = parseInt(sz, 10) || 52, dbl = m ? +m[2] : 18, shape = (p.shape || '').toLowerCase(), f = SHAPE_ED[shape] || 1.1;
+    const pd = parseFloat(state.rx && state.rx.pd) || 63, dec = Math.max(0, (A + dbl - pd) / 2);
+    return { A, dbl, shape, ed: A * f, dec, r: (A * f) / 2 + dec, pdGuess: !(state.rx && state.rx.pd) };
+  }
+  function lensFor(id, P) {
+    const [n, minCT, kM, kP] = IDX[id] || IDX['150'], q = (frameGeo().r / 32.5) ** 2;   // scale Essilor's 65 mm figures by power and lens size
+    const ct = P < 0 ? minCT : 1.0 + kP * (P / 4) * q, et = P < 0 ? minCT + kM * (-P / 6) * q : 1.0;
+    const F1 = P > 0 ? P + 6 : Math.max(0.5, P / 2 + 6);                         // typical front curve
+    const eye = 1 / (1 - 0.014 * P) / (1 - (ct / 1000 / n) * F1);              // how big the eye looks to others
+    return { ct, et, eye };
+  }
+  // Parham's rule: under 1.25 Orma 1.5; 1.25–2.25 Airwear; half-frame / drill mount always at least Airwear. Higher is always allowed.
+  function suggest(P) {
+    const a = Math.abs(P), mount = /rimless|semi|drill|shield/i.test(p.rim || '');
+    let id = a < 1.25 ? '150' : a <= 2.25 ? 'air' : a <= 3.75 ? '160' : a <= 5 ? '167' : '174';   // over 3.75 → 1.67 and up
+    if (P > 0) id = a < 1.25 ? '150' : a <= 2.25 ? 'air' : a <= 3 ? '160' : a <= 3.75 ? '167' : '174';
+    if (mount && id === '150') id = 'air';
+    const order = ['150', 'air', '160', '167', '174'];          // not made for this Rx / design → next thinner that is
+    for (let i = order.indexOf(id); i < order.length; i++) if (indexOK(order[i])) return order[i];
+    for (let i = order.indexOf(id); i >= 0; i--) if (indexOK(order[i])) return order[i];
+    return id;
+  }
+  // Front view of the customer's frame: lens shape by frame shape, with the edge (minus) or centre (plus) thickness drawn in.
+  function frontView(l, P, g) {
+    const w = 120, h = Math.round(w * ({ round: 0.92, oval: 0.72, 'cat eye': 0.68, butterfly: 0.8, pilot: 0.85, aviator: 0.85, mask: 0.7, rectangular: 0.6, square: 0.82 }[g.shape] || 0.76));
+    const rx = { round: w / 2, oval: w / 2, 'cat eye': 28, butterfly: 30, pilot: 40, aviator: 40 }[g.shape] ?? 18, ring = Math.min(26, (P < 0 ? l.et : 0) * 3.2);
+    const one = (x) => `<rect x="${x}" y="4" width="${w}" height="${h}" rx="${Math.min(rx, w / 2)}" ry="${Math.min(rx, h / 2)}" fill="url(#lg)" stroke="#1d1a15" stroke-width="5"/>
+      ${ring ? `<rect x="${x + ring / 2 + 2.5}" y="${4 + ring / 2 + 2.5}" width="${w - ring - 5}" height="${h - ring - 5}" rx="${Math.max(0, Math.min(rx, w / 2) - ring / 2)}" fill="none" stroke="rgba(150,175,190,.55)" stroke-width="${ring}"/>` : ''}`;
+    const bulge = P > 0 ? Math.min(0.75, l.ct / 9) : 0;
+    return `<svg class="thick__front" viewBox="0 0 ${2 * w + 40} ${h + 8}" role="img" aria-label="Your lenses in this frame"><defs><radialGradient id="lg"><stop offset="0" stop-color="rgba(201,164,106,${bulge})"/><stop offset="1" stop-color="rgba(220,235,245,.35)"/></radialGradient></defs>
+      ${one(4)}<path d="M${w + 4} ${h * 0.32} Q${w + 20} ${h * 0.18} ${w + 36} ${h * 0.32}" fill="none" stroke="#1d1a15" stroke-width="5"/>${one(w + 36)}</svg>`;
+  }
+  function renderThick() {
+    const box = $('#thick'); if (!box) return;
+    const typed = rxPower(), P = typed ?? (state.samplePow ?? -4), pick = state.pick.index || '150', g = frameGeo();
+    const opts = (L.steps.find((s) => s.id === 'index') || { options: [] }).options, name = (id) => (opts.find((o) => o.id === id) || {}).name || id;
+    const priceOf = (id) => (opts.find((o) => o.id === id) || {}).price || 0;
+    const sug0 = suggest(P);
+    const freeAt150 = (() => { const k = state.pick.index; state.pick.index = '150'; const ok = !!(stockOffer() || {}).ok; state.pick.index = k; return ok; })();
+    const target = freeAt150 ? '150' : sug0;   // never auto-trade the free stock 1.5 lens for a paid upgrade; the upgrade stays a suggestion
+    if (typed != null && !state.indexTouched && pick !== target) { state.pick.index = target; renderConfig(); renderBuy(); return; }   // smart default from the Rx; customer can still change it
+    const base = lensFor('150', P), cur = lensFor(pick, P), sug = sug0, minus = P < 0, k = 9, W = 300, pw = (P > 0 ? '+' : '−') + Math.abs(P).toFixed(2);
+    const profile = (l, cls) => { const t = l.et, c = l.ct, f = 5, y = 10;   // front sag f px, thickness scaled k px/mm
+      const top = `M0 ${y + f} Q${W / 2} ${y - f} ${W} ${y + f}`, eT = t * k, cT = c * k;
+      return minus ? `<path class="${cls}" d="${top} L${W} ${y + f + eT} Q${W / 2} ${y - f + cT * 2 - eT} 0 ${y + f + eT} Z"/>`
+                   : `<path class="${cls}" d="M0 ${y + f} Q${W / 2} ${y - f - 2 * (cT - eT)} ${W} ${y + f} L${W} ${y + f + eT} Q${W / 2} ${y - f + eT} 0 ${y + f + eT} Z"/>`; };
+    const pct = (a, b) => Math.round((1 - a / b) * 100), eyePct = (e) => (e >= 1 ? '+' : '−') + Math.abs((e - 1) * 100).toFixed(1) + '%';
+    const thin = minus ? `Edge ${cur.et.toFixed(1)} mm` : `Centre ${cur.ct.toFixed(1)} mm`, thinBase = minus ? base.et : base.ct, thinCur = minus ? cur.et : cur.ct;
+    const mx = Math.max(base.et, base.ct);
+    box.innerHTML = `<p class="eyebrow" style="margin:14px 0 6px">Your lenses in this frame</p>
+      ${typed == null ? `<p class="fine" style="margin:0 0 6px">Enter your prescription above to see your own lenses, or try a power:</p><div class="choice-row">${[-8, -6, -4, -2, 2, 4, 6].map((v) => `<button class="tab" data-pow="${v}" aria-pressed="${v === P}">${v > 0 ? '+' : '−'}${Math.abs(v)}.00</button>`).join('')}</div>`
+        : `<p class="fine" style="margin:0 0 6px">At your strongest power, ${pw}${minus ? ': minus lenses are thickest at the edge' : ': plus lenses are thickest in the centre'}.</p>`}
+      ${frontView(cur, P, g)}
+      <svg class="thick__svg" viewBox="-4 ${-mx * k - 16} ${W + 8} ${2 * mx * k + 56}" role="img" aria-label="Side view: ${esc(name(pick))} compared with Standard 1.5">${profile(base, 'thick__base')}${profile(cur, 'thick__cur')}</svg>
+      <div class="thick__nums"><span><b>${esc(name(pick))}</b> ${thin}${pick !== '150' ? ` · <b>${pct(thinCur, thinBase)}% thinner</b> than Standard 1.5` : ''}</span>
+        <span>${minus ? 'A thinner edge means less of the thick “rings” look at the sides of your lenses' : `Eyes look ${eyePct(cur.eye)} bigger to others${pick !== '150' && Math.abs(cur.eye - base.eye) >= 0.003 ? ` (Standard 1.5: ${eyePct(base.eye)})` : ''}`}</span>
+        <span>${priceOf(pick) ? `You pay +${fmt(priceOf(pick))} for this lens` : 'Included'}</span>
+        <span class="fine">Frame ${g.A} mm${p.shape ? ', ' + esc(p.shape.toLowerCase()) : ''}${g.pdGuess ? '' : ', your PD ' + esc(state.rx.pd)}: bigger and more angular frames make thicker lenses.</span></div>
+      <div class="thick__tip"><b>Our suggestion for ${pw}${/rimless|semi|drill|shield/i.test(p.rim || '') ? ' in this ' + esc(p.rim.toLowerCase()) + ' frame' : ''}: ${esc(name(sug))}</b>${sug !== pick ? ` <button class="tab" data-s="index" data-o="${sug}">Choose it${priceOf(sug) ? ' · +' + fmt(priceOf(sug)) : ''}</button>` : ' ✓'}
+        ${(() => { const no = opts.filter((o) => !indexOK(o.id)).map((o) => o.name); return no.length && no.length < opts.length ? `<small>Not made for ${typed == null ? 'this lens design' : 'your prescription in this lens design'}: ${esc(no.join(', '))}.</small>` : no.length ? '<small>Your prescription is outside the usual range. We’ll call you to confirm the best lens.</small>' : ''; })()}
+        ${pick === '150' && (stockOffer() || {}).ok && sug !== '150' ? '<small>Standard 1.5 is included with this frame (stock lens offer). The thinner lens is optional: you pay only its upgrade if it’s in stock.</small>' : ''}
+        <small>You can always go thinner. Grey = Standard 1.5, gold = your choice. An estimate; your optician confirms the best lens before it’s made.</small></div>`;
+    box.querySelectorAll('[data-pow]').forEach((b) => b.addEventListener('click', () => { state.samplePow = +b.dataset.pow; renderThick(); }));
+    box.querySelectorAll('[data-s]').forEach((b) => b.addEventListener('click', () => { state.indexTouched = true; state.pick.index = b.dataset.o; settle(); renderConfig(); renderBuy(); }));
+  }
+
+  /* ---------- Progressive: like Essilor's Varilux demo. Distance is clear across the top; the soft, swimmy area sits in the
+     lower outer corners, beside the reading / computer zone. Better designs push that line lower and further out.
+     Left = chosen Varilux, right = Essilor Progressive DS One (standard). Illustration only. */
+  const PROG = { dsone: { h: 80, c: 62, blur: 8 }, freedom: { h: 120, c: 88, blur: 6.5 }, comfortmax: { h: 158, c: 115, blur: 5.5, f: 'brightness(1.03) contrast(1.04)' },
+    physio: { h: 200, c: 148, blur: 4.5, f: 'brightness(1.05) contrast(1.08)' }, xr: { h: 262, c: 188, blur: 3, f: 'brightness(1.08) contrast(1.14) saturate(1.05)' } };   // xr: barely any soft area
+  const edge = ({ h, c }, side) => { const s = side < 0 ? (x) => x : (x) => 400 - x, x2 = 200 - c;   // from the outer edge at height h down to the reading zone
+    return `M${s(0)} ${h} C${s(x2 * 0.55)} ${h + 12} ${s(x2)} ${(h + 300) / 2} ${s(x2)} 300`; };
+  const sceneSVG = (id) => { const d = PROG[id], blurZone = [-1, 1].map((sd) => edge(d, sd) + ` L${sd < 0 ? 0 : 400} 300 Z`).join(' ');
+    return `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><filter id="bl-${id}" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="${d.blur}"/></filter><clipPath id="cz-${id}"><path d="${blurZone}"/></clipPath></defs>
+      <image href="/assets/img/boutique.jpg" width="400" height="300" preserveAspectRatio="xMidYMid slice" style="filter:${d.f || 'none'}"/>
+      <g clip-path="url(#cz-${id})"><g class="pd__swim"><image href="/assets/img/boutique.jpg" x="-10" y="-8" width="420" height="316" preserveAspectRatio="xMidYMid slice" filter="url(#bl-${id})"/></g></g>
+      ${[-1, 1].map((sd) => `<path class="pd__line" d="${edge(d, sd)}" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="6 5"/>`).join('')}</svg>`; };
+  function progDemo() {
+    const left = state.pick.design && state.pick.design !== 'dsone' ? state.pick.design : 'xr';
+    const names = { xr: 'Varilux XR · $1,050', physio: 'Varilux Physio Extensee · $900', comfortmax: 'Varilux Comfort Max · $700', freedom: 'Varilux Freedom DS One · $500' };
+    return `<div class="prog-demo"><p class="eyebrow" style="margin:14px 0 6px">See the difference</p>
+      <div class="pd__labels"><select id="pdLeft" aria-label="Lens on the left">${Object.entries(names).map(([k, v]) => `<option value="${k}"${k === left ? ' selected' : ''}>${v}</option>`).join('')}</select>
+        <label class="pd__zone"><input type="checkbox" id="pdZone" checked> Zone lines</label><span>Standard progressive<br><small>Essilor DS One · $300</small></span></div>
+      <div class="pd__stage" style="--x:50%"><div class="pd__side" id="pdL">${sceneSVG(left)}</div><div class="pd__side pd__r">${sceneSVG('dsone')}</div>
+        <span class="pd__handle" aria-hidden="true">⟷</span><input type="range" min="0" max="100" value="50" aria-label="Drag to compare"></div>
+      ${progFeatures(left)}
+      <p class="fine">Images simulated for demonstration. Distance stays clear in every design; the soft, swimmy area is low at the sides, next to the reading and computer zone. Better designs make it smaller and the view crisper and brighter. Try them in the boutique.</p></div>`;
+  }
+  // What each design adds (from Essilor's Varilux range chart), chosen lens vs DS One.
+  const FEAT = [['Sharp vision', 'xr physio comfortmax freedom dsone'], ['Wider fields of vision', 'xr physio comfortmax freedom'], ['Sharp even in low light', 'xr physio comfortmax'], ['Large reading area, easy head posture', 'comfortmax'],
+    ['Extra contrast in any light', 'physio'], ['Better near vision for reading', 'xr physio comfortmax'], ['Stable vision when you move', 'xr'],
+    ['Extended near vision at arm’s reach (phone, screen)', 'xr'], ['Built around how your eyes move', 'xr']];
+  const progFeatures = (id) => { const nm = { xr: 'XR', physio: 'Physio', comfortmax: 'Comfort Max', freedom: 'Freedom DS One', dsone: 'Standard' };
+    return `<table class="pd__feat" id="pdFeat"><tr><th></th><th>${nm[id]}</th><th>Standard</th></tr>${FEAT.map(([f, has]) => `<tr><td>${f}</td><td>${has.includes(id) ? '✓' : '–'}</td><td>${has.includes('dsone') ? '✓' : '–'}</td></tr>`).join('')}</table>`; };
+  function wireProgDemo() {
+    const st = document.querySelector('.pd__stage'); if (!st) return;
+    st.querySelector('input').addEventListener('input', (e) => st.style.setProperty('--x', e.target.value + '%'));
+    $('#pdLeft').addEventListener('change', (e) => { $('#pdL').innerHTML = sceneSVG(e.target.value); $('#pdFeat').outerHTML = progFeatures(e.target.value); });
+    $('#pdZone').addEventListener('change', (e) => st.classList.toggle('pd--nolines', !e.target.checked));
+  }
+
+  /* ---------- Prescription: type it in, send it later, on file, or book an exam ---------- */
+  const RX_WAYS = [['enter', 'Enter my prescription', 'Type it from your prescription slip'], ['email', 'Email or text it after ordering', 'A photo of your prescription is fine'],
+    ['file', 'You have it on file', 'From a Leruso eye exam'], ['exam', 'Book an eye exam first', 'We hold your frame until your exam']];
+  function renderRx(c) {
+    state.rxWay = state.rxWay || 'enter'; state.rx = state.rx || {};
+    const prog = true;   // prescription comes before SV/progressive, so always offer Add
+    // Pick lists, not typing: phone number pads have no + or − key, and a list can't hold an impossible value.
+    const steps = (from, to, st) => { const o = []; for (let v = from; v <= to + 1e-9; v += st) o.push(+v.toFixed(2)); return o; };
+    const sign = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(2);
+    const RX_OPTS = { Sph: steps(-20, 12, 0.25).map((v) => [v ? sign(v) : 'Plano', v ? sign(v) : '0.00']).reverse(), Cyl: steps(-6, 6, 0.25).filter((v) => v && (v < 0 || state.plusCyl)).map((v) => [sign(v), sign(v)]).reverse().sort((a, b) => (a[0][0] === '+') - (b[0][0] === '+')),   // minus cyl first; plus only when ticked (ophthalmologist Rx, rare)
+      Axis: steps(1, 180, 1).map((v) => [String(v), String(v)]), Add: steps(0.75, 3.5, 0.25).map((v) => [sign(v), sign(v)]), pd: steps(50, 80, 0.5).map((v) => [v + ' mm', String(v)]) };
+    const num = (id, ph) => { const k = id.replace(/^o[ds]/, ''), cur = state.rx[id] || '';
+      return `<select class="rx-in" data-rx="${id}" aria-label="${id}"><option value="">${k === 'Cyl' ? 'None' : '–'}</option>${RX_OPTS[k].map(([t, v]) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`; };
+    const row = (eye, label) => `<tr><th>${label}</th><td>${num(eye + 'Sph')}</td><td>${num(eye + 'Cyl')}</td><td>${num(eye + 'Axis')}</td>${prog ? `<td>${num(eye + 'Add')}</td>` : ''}</tr>`;
+    const box = document.createElement('div'); box.className = 'rx-sub'; box.id = 'rxPanel';
+    box.innerHTML = `<h2>Your prescription</h2><div class="opts">${RX_WAYS.map(([id, t, d]) => `<button class="opt" data-rxw="${id}" aria-pressed="${state.rxWay === id}"><b>${t}</b><small>${d}</small></button>`).join('')}</div>
+      ${state.rxWay === 'enter' ? `<table class="rx-table"><tr><th></th><th>Sphere</th><th>Cylinder</th><th>Axis</th>${prog ? '<th>Add <small>(if any)</small></th>' : ''}</tr>${row('od', 'Right (OD)')}${row('os', 'Left (OS)')}</table>
+        <label class="toggle" style="white-space:normal;font-size:12.5px"><input type="checkbox" id="plusCyl" ${state.plusCyl ? 'checked' : ''}> My prescription has a <b>+</b> (plus) cylinder</label>
+        <div class="rx-pd"><label>PD (pupil distance) ${num('pd', '63')}</label><label>Prescription date <input class="rx-in" data-rx="date" type="month" value="${esc(state.rx.date || '')}"></label></div>
+        <p class="fine">Not sure about your PD? Leave it blank and we'll measure it, or use our measuring tool after you order. An optician checks every prescription before your lenses are made.</p>`
+      : state.rxWay === 'email' ? `<p class="fine" style="font-size:14px">After you order, email a photo of your prescription to <a href="mailto:lerusoeyewear@outlook.com" style="color:var(--gold-2)">lerusoeyewear@outlook.com</a> or text it to (905) 881-4123 with your order reference.</p>`
+      : state.rxWay === 'exam' ? `<p class="fine" style="font-size:14px">Book your exam and we'll hold this frame for you. <a href="https://book.lerusoeyewear.com" target="_blank" rel="noopener" style="color:var(--gold-2)">Book an eye exam →</a></p>`
+      : `<p class="fine" style="font-size:14px">We'll use the prescription from your most recent Leruso eye exam and confirm it with you.</p>`}`;
+    c.querySelector('.panel > .opts').after(box);
+    rxHint();
+    if (box.querySelector('#plusCyl')) box.querySelector('#plusCyl').addEventListener('change', (e) => { state.plusCyl = e.target.checked; if (!state.plusCyl) for (const k of ['odCyl', 'osCyl']) if (/^\+/.test(state.rx[k] || '')) delete state.rx[k]; renderConfig(); renderBuy(); });
+    box.querySelectorAll('[data-rxw]').forEach((b) => b.addEventListener('click', () => { state.rxWay = b.dataset.rxw; renderConfig(); renderBuy(); }));
+    box.querySelectorAll('.rx-in').forEach((i) => i.addEventListener(i.tagName === 'SELECT' ? 'change' : 'input', () => { state.rx[i.dataset.rx] = i.value.trim(); if (i.tagName === 'SELECT') { settle(); renderConfig(); renderBuy(); } }));
+  }
+  // An Add on the prescription means reading help: point to progressive (customer still chooses).
+  function rxHint() {
+    const r = state.rx || {}, has = r.odAdd || r.osAdd, el = $('#rxHint') || Object.assign(document.createElement('p'), { id: 'rxHint', className: 'fine' });
+    if (!$('#rxHint')) $('#rxPanel').append(el);
+    el.innerHTML = has && state.pick.rx !== 'prog' ? 'Your prescription has an Add, so a <b>progressive</b> lens gives you distance, computer and reading in one pair. <button class="tab" type="button" id="toProg">Switch to progressive</button>' : '';
+    const b = $('#toProg'); if (b) b.addEventListener('click', () => { state.pick.rx = 'prog'; settle(); renderConfig(); renderBuy(); });
+  }
+  function rxSummary() {
+    if (!state.lensOn) return '';
+    const w = RX_WAYS.find((x) => x[0] === state.rxWay) || RX_WAYS[0];
+    if (state.rxWay !== 'enter') return ' · Rx: ' + w[1];
+    const r = state.rx || {}, eye = (e) => [r[e + 'Sph'], r[e + 'Cyl'], r[e + 'Axis'] && 'x' + r[e + 'Axis'], r[e + 'Add'] && 'add ' + r[e + 'Add']].filter(Boolean).join(' ');
+    return ` · Rx OD ${eye('od') || '–'} / OS ${eye('os') || '–'}${r.pd ? ' · PD ' + r.pd : ''}${r.date ? ' · dated ' + r.date : ''}`;
+  }
+
+  /* ---------- add to bag (checkout, shipping and HST happen in the bag) ---------- */
+  function renderBuy() {
+    const b = $('#buy');
+    if (!p.price && p.kind !== 'contacts') {   // one-of-a-kind pieces: private enquiry, no online price
+      b.innerHTML = `<p class="eyebrow" style="margin:0">Private enquiry</p><p class="fine" style="font-size:14px">This piece is shown by appointment. Call us or book a private viewing and we’ll share the details.</p>
+        <a class="btn btn--gold" href="tel:+19058814123">Call (905) 881-4123</a> <a class="btn btn--ghost" href="https://book.lerusoeyewear.com" target="_blank" rel="noopener">Book a private viewing</a>`;
+      return;
+    }
+    const lens = p.kind === 'contacts' ? { pack: parseInt((p.variants[state.variant] || p.variants[0]).option, 10), boxes: state.boxes, replacement: p.replacement } : null;
+    const more = lens && p.replacement ? Shop.boxesToFree(lens) : 0;
+    b.innerHTML = `<div class="total"><span>${esc(summary())}</span><b>${fmt(items())}</b></div>
+      <p class="fine">${taxable() ? '+ 13% HST (non-prescription).' : 'No HST on prescription eyewear.'} ${p.kind === 'contacts' ? (more ? `Add ${more} more box${more > 1 ? 'es' : ''} for <b>free shipping</b>, or add any glasses.` : '<b>Free shipping</b> on this order.') : '<b>Free shipping</b> on glasses.'}</p>
+      ${p.kind === 'contacts' && /colou?r/i.test(p.title) ? `<label class="toggle" style="white-space:normal"><input type="checkbox" id="plano" ${state.plano ? 'checked' : ''}> No prescription power (0.00), colour only. HST applies.</label>` : ''}
+      ${(() => { const so = stockOffer(); if (!so) return framePrice() >= 350 && state.lensOn && state.pick.rx === 'sv' ? '<p class="fine">Frames from C$350: stock single vision lenses (Essential or Anti-reflective) 100% off, or Blue-light for C$75, when your prescription fits our stock range. Thinner materials pay only their upgrade; not on 1.74.</p>' : '';
+        return so.ok ? `<p class="stock-offer"><b>Stock lens offer: ${esc(so.label)} (−${fmt(so.amount)})</b><br><small>With frames from C$350. We confirm your prescription before ordering.</small></p>`
+          : `<p class="fine">Stock lens offer (frames from C$350): ${esc(so.why)}.</p>`; })()}
+      <p class="err" id="err" role="alert"></p>
+      <button class="btn btn--gold" type="button" id="add">Add to bag · ${fmt(items())}</button>
+      <p class="fine" id="added"></p>`;
+    if ($('#plano')) $('#plano').addEventListener('change', (e) => { state.plano = e.target.checked; renderBuy(); });
+    $('#add').addEventListener('click', () => {
+      const missing = state.lensOn && stepsFor().find((st) => (optOf(st.id) || {}).choices && !state.choices[st.id]);
+      if (missing) return ($('#err').textContent = `Please choose a ${optOf(missing.id).name} colour.`);
+      if (state.lensOn && state.rxWay === 'enter' && !(state.rx.odSph || state.rx.osSph)) return ($('#err').textContent = 'Please enter your prescription, or choose another option under "Your prescription".');
+      Shop.bag.add({ slug: p.slug, brand: p.brand, title: p.title, kind: p.kind, b: brand || '', img: (p.images || [])[0] || '', config: summary() + rxSummary() + ((stockOffer() || {}).ok ? ' · Stock lens offer: ' + stockOffer().label : ''), price: items(),
+        taxable: taxable(), rx: p.kind === 'contacts' || state.lensOn, specialOrder: !inStore, contacts: lens });
+      $('#added').innerHTML = `Added. <a href="/shop/bag/" style="color:var(--gold-2)">View bag and check out →</a> or keep shopping.`;
+    });
+  }
+  renderPrice(); renderConfig(); renderBuy(); showColourImage();
+  const cmpLabel = () => ($('#cmpBtn').textContent = Shop.compare.has(p.slug) ? '✓ In compare' : '+ Compare');
+  if (p.kind === 'contacts') $('#cmpBtn').hidden = true; else cmpLabel();
+  $('#cmpBtn').addEventListener('click', () => { const ok = Shop.compare.toggle({ slug: p.slug, b: brand || '', brand: p.brand, title: p.title, img: (p.images || [])[0] || '' });
+    $('#cmpMsg').textContent = ok ? '' : `You can compare up to ${Shop.compare.MAX}. Remove one first.`; cmpLabel(); });
+  // Virtual try-on entry points
+  if (p.kind === 'contacts' && /colou?r/i.test(p.title)) $('#tryon').innerHTML = '<a class="btn btn--ghost btn--sm" href="/shop/try-on/?mode=contacts">See the colours on your eyes</a>';
+  else fetch('tryon.json', { cache: 'no-cache' }).then((r) => r.json()).then((t) => { if (t[p.slug]) { const u = `/shop/try-on/?p=${encodeURIComponent(p.slug)}`; $('#tryon').innerHTML = `<a class="btn btn--gold btn--sm" href="${u}">Try it on</a>`; $('#gTry').href = u; $('#gTry').hidden = false; } }).catch(() => {});
+  document.querySelectorAll('[data-year]').forEach((e) => (e.textContent = new Date().getFullYear()));
+})();
+</script>
+</body>
+</html>
