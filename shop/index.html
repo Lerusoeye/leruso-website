@@ -42,6 +42,7 @@
       <button class="c-tab" data-kind="all" aria-pressed="true">All</button>
       <button class="c-tab" data-kind="glasses" aria-pressed="false">Eyeglasses</button>
       <button class="c-tab" data-kind="sunglasses" aria-pressed="false">Sunglasses</button>
+      <button class="c-tab" data-kind="clearance" aria-pressed="false">Clearance</button>
       <a class="c-tab" href="/shop/contacts/">Contact lenses</a>
       <a class="c-tab c-tab--lux" href="/shop/limited/">Limited Edition</a>
     </div>
@@ -116,7 +117,7 @@
 
   const card = (p) => {
     const href = `product.html?p=${encodeURIComponent(p.slug)}${p.legacy ? '' : '&b=' + encodeURIComponent(p.brand)}`;
-    const note = p.inStore ? '<span class="c-note c-note--stock">In the boutique</span>' : p.limited ? '<span class="c-note">Limited edition</span>' : p.isNew ? '<span class="c-note">New season</span>' : '';
+    const note = p.inStore ? '<span class="c-note c-note--stock">In the boutique</span>' : p.clearance ? '<span class="c-note">Clearance</span>' : p.limited ? '<span class="c-note">Limited edition</span>' : p.isNew ? '<span class="c-note">New season</span>' : '';
     return `<a class="c-card" href="${href}">
       <div class="c-card__img">${note}
         <img src="../${esc(p.img)}" alt="${esc(p.brand + ' ' + p.title)}" loading="lazy" width="600" height="450">
@@ -128,7 +129,7 @@
   };
   function render() {
     const q = $('#q').value.trim().toLowerCase(), s = $('#sort').value, st = $('#instock').checked;
-    let list = all.filter((p) => (kind === 'all' || p.kind === kind) && (!house || p.brand === house) && (!st || p.inStore) && (!q || (p.brand + ' ' + p.title).toLowerCase().includes(q)));
+    let list = all.filter((p) => (kind === 'all' || p.kind === kind || (kind === 'clearance' && p.clearance)) && (!house || p.brand === house) && (!st || p.inStore) && (!q || (p.brand + ' ' + p.title).toLowerCase().includes(q)));
     if (s === 'low') list.sort((a, c) => (a.price || 1e9) - (c.price || 1e9)); else if (s === 'high') list.sort((a, c) => (c.price || 0) - (a.price || 0)); else list.sort((a, c) => rank[a.slug] - rank[c.slug]);
     $('#count').textContent = `${list.length.toLocaleString('en-CA')} piece${list.length === 1 ? '' : 's'}`;
     $('#active').innerHTML = house ? `<button class="c-clear" id="clearHouse">${esc(house)} ✕</button>` : '';
@@ -137,7 +138,7 @@
     $('#more').hidden = list.length <= shown;
     $('#more').textContent = `Show ${Math.min(page, list.length - shown)} more`;
   }
-  const setKind = (k) => { kind = ['glasses', 'sunglasses'].includes(k) ? k : 'all'; document.querySelectorAll('.c-tab[data-kind]').forEach((t) => t.setAttribute('aria-pressed', t.dataset.kind === kind)); shown = page; render(); };
+  const setKind = (k) => { kind = ['glasses', 'sunglasses', 'clearance'].includes(k) ? k : 'all'; document.querySelectorAll('.c-tab[data-kind]').forEach((t) => t.setAttribute('aria-pressed', t.dataset.kind === kind)); shown = page; render(); };
   document.querySelectorAll('.c-tab[data-kind]').forEach((t) => t.addEventListener('click', () => { history.replaceState(null, '', location.pathname + location.search + (t.dataset.kind === 'all' ? '' : '#' + t.dataset.kind)); setKind(t.dataset.kind); }));
   ['q', 'sort', 'instock'].forEach((id) => $('#' + id).addEventListener('input', () => { shown = page; render(); }));
   $('#per').addEventListener('change', (e) => { page = +e.target.value; shown = page; render(); });
