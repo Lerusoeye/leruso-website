@@ -175,6 +175,55 @@
       },
       "type": "amount",
       "value": 180
+    },
+    {
+      "id": "inface-clearance",
+      "label": "Clearance",
+      "scope": {
+        "slugs": [
+          "inface-bonbon-clearance",
+          "inface-famous-clearance",
+          "inface-omg-clearance",
+          "inface-yay-clearance",
+          "inface-dang-clearance",
+          "inface-gosh-clearance",
+          "inface-beetroot-clearance",
+          "inface-butterfly-clearance",
+          "inface-bean-clearance",
+          "inface-kiwi-clearance",
+          "inface-bouncy-clearance",
+          "inface-clever-clearance",
+          "inface-feisty-clearance",
+          "inface-puffin-clearance",
+          "inface-radish-clearance",
+          "inface-wombat-clearance",
+          "inface-peacock-clearance",
+          "inface-radical-clearance",
+          "inface-confident-clearance",
+          "inface-pineapple-clearance",
+          "inface-if1461-clearance",
+          "inface-if1467-clearance",
+          "inface-if1473-clearance",
+          "inface-if1475-clearance",
+          "inface-if1477-clearance",
+          "inface-if9478-clearance",
+          "inface-if9480-clearance",
+          "inface-if9494-clearance",
+          "inface-if9495-clearance",
+          "inface-if9497-clearance",
+          "inface-if1453-clearance",
+          "inface-if1457-clearance",
+          "inface-if9473-clearance",
+          "inface-if9475-clearance",
+          "inface-if9846-clearance",
+          "inface-if9442-clearance",
+          "inface-if9444-clearance",
+          "inface-if1347-clearance",
+          "inface-if9434-clearance"
+        ]
+      },
+      "type": "amount",
+      "value": 180
     }
   ]
 }
