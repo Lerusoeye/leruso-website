@@ -241,7 +241,10 @@ if(S.settings.pin){sha(String(S.settings.pin)).then(h=>{S.settings.pinH=h;delete
 
 /* ---------------- IndexedDB ---------------- */
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('leruso-measure',1);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('sessions'))d.createObjectStore('sessions',{keyPath:'id'});if(!d.objectStoreNames.contains('images'))d.createObjectStore('images')};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function tx(store,mode,fn){return new Promise((res,rej)=>{const t=S.db.transaction(store,mode);const st=t.objectStore(store);let out;const q=fn(st);if(q)q.onsuccess=()=>{out=q.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('aborted'))})}
+// iOS closes the IndexedDB connection when the camera/app switcher takes over ("The database connection is closing"):
+// reopen it and retry the save once instead of losing the photo.
+async function tx(store,mode,fn){try{return await tx1(store,mode,fn)}catch(e){try{S.db&&S.db.close()}catch(_){}S.db=await openDB();return tx1(store,mode,fn)}}
+function tx1(store,mode,fn){return new Promise((res,rej)=>{let t;try{t=S.db.transaction(store,mode)}catch(e){return rej(e)}const st=t.objectStore(store);let out;const q=fn(st);if(q)q.onsuccess=()=>{out=q.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('aborted'))})}
 const dbPutS=s=>tx('sessions','readwrite',st=>st.put(s));
 const dbAllS=()=>tx('sessions','readonly',st=>st.getAll());
 const dbDelS=id=>tx('sessions','readwrite',st=>st.delete(id));
