@@ -72,6 +72,10 @@
   // Boutique units (from Parham's stock list): colour, size, lens, edition and this piece's number.
   const units = p.boutique || [];
   const colName = (c) => (c ? c.name || [c.frame, c.lens].filter(Boolean).join(' / ') || c.code : '');
+  // Kering portal lens text carries feature blurbs ("Transparent Light-weight Frame…"); show the lens colour only.
+  const tidy = (t) => String(t || '').replace(/\s+(Light-weight|Discover More|Anti-reflective|Ideal For|Smart Curvy|Flex-hinge|Easy Rimless|Blue Light Reduction|Polarized Lenses With)\b.*$/, '');
+  const colLabel = (c) => (c ? [c.code, tidy(c.name || [c.frame, tidy(c.lens)].filter(Boolean).join(' / '))].filter(Boolean).join(' · ') : '');
+  const modelName = (i) => (cols[i] && cols[i].code ? `${p.title}-${cols[i].code}` : p.title);
   const unitFor = (i) => units.find((u) => !u.colour || !cols.length || u.colour === colName(cols[i]));
   const firstUnit = cols.findIndex((c, i) => units.some((u) => u.colour && u.colour === colName(c)));
   let inStore = p.kind === 'contacts' || p.inStore;
@@ -92,15 +96,15 @@
     </section>
     <section class="info">
       <p class="eyebrow" style="margin:0">${esc(p.brand)}${lux && p.limited ? ' · Limited Edition' : ''}</p>
-      <h1>${esc(p.title)}</h1>
+      <h1 id="modelName">${esc(modelName(Math.max(0, firstUnit)))}</h1>
       ${p.vault ? '<p class="lux-scarcity">From The Vault. One of the last pieces in existence.</p>' : p.scarcity ? `<p class="lux-scarcity">${esc(p.scarcity.replace(/,.*$/, '.'))}</p>` : ''}
       ${p.subtitle && !lux ? `<p class="sub">${esc(p.subtitle)}</p>` : ''}
       <div class="price-big" id="price"></div>
       <p class="ship${inStore ? ' ship--stock' : ''}" id="ship">${esc(shipText)}</p>
       <p id="tryon"></p><p><button class="btn btn--ghost btn--sm" type="button" id="cmpBtn"></button> <span class="fine" id="cmpMsg"></span></p>
-      ${units.length ? `<div class="boutique-units"><p class="eyebrow" style="margin:0 0 8px">In the boutique now</p>${units.map((u) => `<p>${u.number && u.edition ? `<b>No. ${u.number} of ${u.edition}</b> · ` : u.edition ? `<b>Limited to ${u.edition}</b> · ` : ''}${esc([u.colour && u.colour.replace(/\s*\(.*\)$/, ''), u.lens, u.size && 'size ' + u.size].filter(Boolean).join(' · ') || 'Available to see in person')}</p>`).join('')}</div>` : ''}
+      ${units.length ? `<div class="boutique-units"><p class="eyebrow" style="margin:0 0 8px">In the boutique now</p>${units.map((u) => `<p>${u.number && u.edition ? `<b>No. ${u.number} of ${u.edition}</b> · ` : u.edition ? `<b>Limited to ${u.edition}</b> · ` : ''}${esc([u.colour && tidy(u.colour.replace(/\s*\(.*\)$/, '')), u.lens, u.size && 'size ' + u.size].filter(Boolean).join(' · ') || 'Available to see in person')}</p>`).join('')}</div>` : ''}
       ${p.brand === 'Leisure Society' ? `<p class="lux-warranty"><b>Lifetime warranty</b> on every Leisure Society frame.</p>` : ''}
-      ${cols.length > 1 ? `<p class="eyebrow" style="margin:22px 0 0">Colour</p><div class="swatches">${cols.map((c, i) => `<button class="swatch${c.img ? ' swatch--img' : ''}" data-c="${i}" aria-pressed="${i === Math.max(0, firstUnit)}">${c.img ? `<img src="../${esc(c.img.replace('.webp', '-t.webp'))}" alt="" loading="lazy">` : ''}<span>${esc(c.name || [c.frame, c.lens].filter(Boolean).join(' / ') || c.code)}</span>${unitFor(i) && units.some((u) => u.colour) ? ' <span class="instore-dot" title="In the boutique">●</span>' : ''}</button>`).join('')}</div>` : ''}
+      ${cols.length > 1 ? `<p class="eyebrow" style="margin:22px 0 0">Colour</p><div class="swatches">${cols.map((c, i) => `<button class="swatch${c.img ? ' swatch--img' : ''}" data-c="${i}" aria-pressed="${i === Math.max(0, firstUnit)}">${c.img ? `<img src="../${esc(c.img.replace('.webp', '-t.webp'))}" alt="" loading="lazy">` : ''}<span>${esc(colLabel(c))}</span>${unitFor(i) && units.some((u) => u.colour) ? ' <span class="instore-dot" title="In the boutique">●</span>' : ''}</button>`).join('')}</div>` : ''}
       ${p.asianFit ? `<p class="eyebrow" style="margin:18px 0 0">Fit</p><div class="swatches"><button class="swatch fitbtn" data-fit="Regular fit" aria-pressed="true">Regular fit</button><button class="swatch fitbtn" data-fit="Asian fit" aria-pressed="false">Asian fit</button></div><p class="fine" style="margin-top:4px">This frame also comes in an Asian fit, with a lower bridge and adjusted nose pads for a better sit.</p>` : ''}
       ${facts.length ? `<dl class="lux-facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
       ${p.story ? `<p class="lux-story">${esc(p.story)}</p>` : ''}
@@ -225,6 +229,7 @@
   }));
   document.querySelectorAll('.swatch:not(.fitbtn)').forEach((b) => b.addEventListener('click', () => {
     state.colour = +b.dataset.c; document.querySelectorAll('.swatch:not(.fitbtn)').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    $('#modelName').textContent = modelName(state.colour);
     showColourImage();
     renderPrice(); renderBuy();
   }));
@@ -350,7 +355,7 @@
   const taxable = () => (p.kind === 'contacts' ? !!state.plano : !state.lensOn);
   function summary() {
     const fit = p.asianFit && state.fit === 'Asian fit' ? 'Asian fit · ' : '';
-    const colour = fit + (cols.length > 1 ? (cols[state.colour].name || [cols[state.colour].frame, cols[state.colour].lens].filter(Boolean).join(' / ') || cols[state.colour].code) + ' · ' : '');
+    const colour = fit + (cols.length > 1 ? colLabel(cols[state.colour]) + ' · ' : '');
     if (p.kind === 'contacts') { const v = p.variants[state.variant] || p.variants[0]; return `${v.option} × ${state.boxes} box${state.boxes > 1 ? 'es' : ''}`; }
     if (!state.lensOn) return colour + 'Frame only';
     return colour + stepsFor().map((s) => { const o = optOf(s.id); return o ? `${s.title}: ${o.name}${o.choices && state.choices[s.id] ? ' (' + state.choices[s.id] + ')' : ''}` : null; }).filter(Boolean).join(' · ');
